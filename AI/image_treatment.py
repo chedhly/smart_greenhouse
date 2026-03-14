@@ -9,6 +9,8 @@ class ImageTreatment:
         self.target_size = target_size
         self.blur_kernel = blur_kernel
         self.clahe = cv.createCLAHE(clipLimit=1.5, tileGridSize=(8,8))
+        
+        #determine if the image is too dark or too bright and apply CLAHE if necessary
 
     def apply_clahe(self, image):
         gray = cv.cvtColor(image, cv.COLOR_RGB2GRAY)

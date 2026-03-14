@@ -7,6 +7,8 @@ from image_treatment import ImageTreatment
 
 class PlantDataset(Sequence):
 
+    #constructor that takes the path to the dataset and the batch size as arguments
+
     def __init__(self, dataset_path, batch_size=32):
 
         self.dataset_path = dataset_path
@@ -34,11 +36,13 @@ class PlantDataset(Sequence):
 
         self.labels = np.array(self.labels)
 
+#return the number of batches per epoch
 
     def __len__(self):
 
         return len(self.image_paths) // self.batch_size
 
+#return a batch of images and labels given an index
 
     def __getitem__(self, index):
 

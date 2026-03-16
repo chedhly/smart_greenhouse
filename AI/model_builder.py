@@ -18,11 +18,9 @@ def build_model(num_classes):
 
     x = Dense(128, activation="relu")(x)
 
-    predictions = Dense(num_classes,
-                        activation="softmax")(x)
+    predictions = Dense(num_classes,activation="softmax")(x)
 
-    model = Model(inputs=base_model.input,
-                  outputs=predictions)
+    model = Model(inputs=base_model.input,outputs=predictions)
 
     model.compile(
         optimizer="adam",

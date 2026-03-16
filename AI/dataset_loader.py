@@ -1,4 +1,3 @@
-import os
 import cv2 as cv
 import numpy as np
 from tensorflow.keras.utils import Sequence # type: ignore
@@ -7,40 +6,22 @@ from image_treatment import ImageTreatment
 
 class PlantDataset(Sequence):
 
-    #constructor that takes the path to the dataset and the batch size as arguments
+    def __init__(self, split="train", batch_size=32):
 
-    def __init__(self, dataset_path, batch_size=32):
-
-        self.dataset_path = dataset_path
         self.batch_size = batch_size
 
         self.processor = ImageTreatment()
 
-        self.image_paths = []
-        self.labels = []
+        self.image_paths = np.load(f"../smart_greenhouse/split_dataset/paths/{split}_paths.npy", allow_pickle=True)
+        self.labels = np.load(f"../smart_greenhouse/split_dataset/labels/{split}_labels.npy", allow_pickle=True)
 
-        classes = sorted(os.listdir(dataset_path))
-        self.class_names = classes
-
-        for idx, class_name in enumerate(classes):
-
-            class_folder = os.path.join(dataset_path, class_name)
-
-            for img in os.listdir(class_folder):
-
-                self.image_paths.append(
-                    os.path.join(class_folder, img)
-                )
-
-                self.labels.append(idx)
-
-        self.labels = np.array(self.labels)
+        self.class_names = np.load("../smart_greenhouse/class_names.npy", allow_pickle=True)
 
 #return the number of batches per epoch
 
     def __len__(self):
 
-        return len(self.image_paths) // self.batch_size
+        return int(np.ceil(len(self.image_paths) / self.batch_size))
 
 #return a batch of images and labels given an index
 
@@ -54,14 +35,17 @@ class PlantDataset(Sequence):
             index*self.batch_size:(index+1)*self.batch_size
         ]
 
-        images = []
+        images = [self.processor.preprocess(cv.imread(path)) for path in batch_paths]
 
-        for path in batch_paths:
+        return np.array(images), np.array(batch_labels)
+    def on_epoch_end(self):
 
-            img = cv.imread(path)
+        # Shuffle the dataset at the end of each epoch
 
-            img = self.processor.preprocess(img)
+        indices = np.arange(len(self.image_paths))
 
-            images.append(img)
+        np.random.shuffle(indices)
 
-        return np.array(images), batch_labels
+        self.image_paths = self.image_paths[indices]
+
+        self.labels = self.labels[indices]

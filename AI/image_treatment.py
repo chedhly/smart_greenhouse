@@ -37,5 +37,5 @@ class ImageTreatment:
         # color conversion to HSV
         image_hsv=cv.cvtColor(image_rgb, cv.COLOR_RGB2HSV)
         # Normalize to [0,1]
-        image_hsv=image_hsv.astype(np.float32) / 255.0
-        return image_hsv
+        final_image=image_hsv.astype(np.float32) / 255.0
+        return final_image

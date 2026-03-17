@@ -1,3 +1,4 @@
+import os
 import cv2 as cv
 import numpy as np
 from tensorflow.keras.utils import Sequence # type: ignore
@@ -15,7 +16,8 @@ class PlantDataset(Sequence):
         self.image_paths = np.load(f"../smart_greenhouse/split_dataset/paths/{split}_paths.npy", allow_pickle=True)
         self.labels = np.load(f"../smart_greenhouse/split_dataset/labels/{split}_labels.npy", allow_pickle=True)
 
-        self.class_names = np.load("../smart_greenhouse/class_names.npy", allow_pickle=True)
+        dataset_path = "../smart_greenhouse/dataset/augmented_plantvillage"
+        self.class_names = sorted(os.listdir(dataset_path))
 
 #return the number of batches per epoch
 

@@ -28,8 +28,6 @@ model.fit(
     epochs= epochs,
     callbacks=[early_stopping, checkpoint], 
     validation_data=val_dataset,
-    use_multiprocessing=True,
-    workers=4
 )
 os.makedirs("../smart_greenhouse/labels", exist_ok=True)
 os.makedirs("../smart_greenhouse/models", exist_ok=True)

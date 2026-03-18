@@ -5,7 +5,7 @@ from sklearn.metrics import classification_report, confusion_matrix # type: igno
 import seaborn as sns # type: ignore
 import matplotlib.pyplot as plt # type: ignore
 
-model=load_model("../smart_greenhouse/models/AI_model.h5")
+model=load_model("../smart_greenhouse/models/AI_model.keras")
 class_names = np.load("../smart_greenhouse/labels/class_names.npy", allow_pickle=True)
 
 test_dataset = PlantDataset(split="test", batch_size=32)
@@ -16,7 +16,7 @@ y_pred = []
 for batch_x, batch_y in test_dataset:
     predictions = model.predict(batch_x)
     predicted_classes = np.argmax(predictions, axis=1)
-    y_true.extend(batch_y.numpy())
+    y_true.extend(batch_y)
     y_pred.extend(predicted_classes)
 
 y_true=np.array(y_true)

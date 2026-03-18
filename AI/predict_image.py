@@ -4,7 +4,7 @@ import os
 from image_treatment import ImageTreatment
 from tensorflow.keras.models import load_model # type: ignore
 
-model = load_model("../smart_greenhouse/models/AI_model.h5")
+model = load_model("../smart_greenhouse/models/AI_model.keras")
 class_names = np.load("../smart_greenhouse/labels/class_names.npy", allow_pickle=True)
 
 processer=ImageTreatment()

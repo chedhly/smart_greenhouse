@@ -1,5 +1,5 @@
 from tensorflow.keras.applications import MobileNetV2 # type: ignore
-from tensorflow.keras.layers import Dense, GlobalAveragePooling2D # type: ignore
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D,Dropout # type: ignore
 from tensorflow.keras.models import Model # type: ignore
 
 #function to build the model using transfer learning with MobileNetV2 as the base model
@@ -13,10 +13,9 @@ def build_model(num_classes):
     )
 
     x = base_model.output
-
     x = GlobalAveragePooling2D()(x)
-
     x = Dense(128, activation="relu")(x)
+    x = Dropout(0.4)(x)
 
     predictions = Dense(num_classes,activation="softmax")(x)
 

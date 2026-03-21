@@ -30,12 +30,8 @@ class ImageTreatment:
         image_rgb=cv.cvtColor(image_bgr, cv.COLOR_BGR2RGB)
         # Resize to target size
         image_rgb=cv.resize(image_rgb, self.target_size, interpolation=cv.INTER_AREA)
-        #noise reduction
-        image_rgb=cv.GaussianBlur(image_rgb, self.blur_kernel, 0)
         #clahe
         image_rgb=self.apply_clahe(image_rgb)
-        # color conversion to HSV
-        image_hsv=cv.cvtColor(image_rgb, cv.COLOR_RGB2HSV)
         # Normalize to [0,1]
-        final_image=image_hsv.astype(np.float32) / 255.0
+        final_image=image_rgb.astype(np.float32) / 255.0
         return final_image

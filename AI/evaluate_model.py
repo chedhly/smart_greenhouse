@@ -5,8 +5,8 @@ from sklearn.metrics import classification_report, confusion_matrix # type: igno
 import seaborn as sns # type: ignore
 import matplotlib.pyplot as plt # type: ignore
 
-model=load_model("../smart_greenhouse/models/AI_model_v2.keras")
-class_names = np.load("../smart_greenhouse/labels/class_names_v2.npy", allow_pickle=True)
+model=load_model("../smart_greenhouse/models/3rd_version/AI_model_v3.keras")
+class_names = np.load("../smart_greenhouse/labels/class_names_v3.npy", allow_pickle=True)
 
 test_dataset = PlantDataset(split="test", batch_size=32)
 

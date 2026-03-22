@@ -18,7 +18,7 @@ early_stopping = EarlyStopping(
     restore_best_weights=True
 )
 checkpoint = ModelCheckpoint(
-    "../smart_greenhouse/best_model_v2.keras",
+    "../smart_greenhouse/models/3rd_version/best_model_v3.keras",
     monitor="val_loss",
     save_best_only=True
 )
@@ -30,7 +30,7 @@ model.fit(
     validation_data=val_dataset,
 )
 os.makedirs("../smart_greenhouse/labels", exist_ok=True)
-os.makedirs("../smart_greenhouse/models", exist_ok=True)
+os.makedirs("../smart_greenhouse/models/3rd_version", exist_ok=True)
 
-model.save("../smart_greenhouse/models/AI_model_v2.keras")
-np.save("../smart_greenhouse/labels/class_names_v2.npy", train_dataset.class_names)
+model.save("../smart_greenhouse/models/3rd_version/AI_model_v3.keras")
+np.save("../smart_greenhouse/labels/class_names_v3.npy", train_dataset.class_names)

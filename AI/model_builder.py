@@ -15,7 +15,7 @@ def build_model(num_classes):
     x = base_model.output
     x = GlobalAveragePooling2D()(x)
     x = Dense(128, activation="relu")(x)
-    x = Dropout(0.4)(x)
+    x = Dropout(0.2)(x)
 
     predictions = Dense(num_classes,activation="softmax")(x)
 

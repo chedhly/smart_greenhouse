@@ -8,7 +8,7 @@ class SSI3430_01A {
 
     public:
     SSI3430_01A(int pin);
-    void control(long x);
+    void control(long x,String msg);
 };
 
 

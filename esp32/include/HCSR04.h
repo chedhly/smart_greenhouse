@@ -4,12 +4,11 @@
 #include <Arduino.h>
 
 class HCSR04 {
-    int trig;
-    int echo;
-
+    int trig,echo;
     public:
     HCSR04(int trigPin, int echoPin);
     long getDistance(long x);
+    void mesureDistance();
 
 };
 #endif

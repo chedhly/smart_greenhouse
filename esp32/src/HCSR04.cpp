@@ -16,3 +16,10 @@ long HCSR04::getDistance(long x) {
     long distance = x- duration * 0.034 / 2 ;
     return distance;
 }
+void HCSR04::mesureDistance() {
+    while(1){
+        long distance = getDistance(100);
+        Serial.print("Distance: "); 
+        Serial.println(distance);
+    }
+}

@@ -17,7 +17,7 @@ void SSI3430_01A_Manager::taskloop() {
     while(1){
         long distance1 = US1->getDistance(50);
         long distance2 = US2->getDistance(50);
-        if (distance1 <= 20) {
+        if (10 < distance1 && distance1 <= 20) {
             valve1->open();
         } else if (distance1 < 10 && !alert1) {
             valve1->open();
@@ -31,7 +31,7 @@ void SSI3430_01A_Manager::taskloop() {
         else {
             valve1->close();
         }
-        if (distance2 <= 20) {
+        if (10<distance2 && distance2 <= 20) {
             valve2->open();
         } else if (distance2 < 10 && !alert2) {
             valve2->open();

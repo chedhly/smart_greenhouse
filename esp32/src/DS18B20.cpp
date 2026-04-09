@@ -64,7 +64,7 @@ void DS18B20::DS18B20Taskinternal(){
         Serial.println("°C");
         
         // Delay for 5 minutes (same as other sensors)
-        vTaskDelay(5*60*1000 / portTICK_PERIOD_MS);
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }
 

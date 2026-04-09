@@ -2,7 +2,7 @@
 
 DHT22_sensor::DHT22_sensor(int pin):
     pin(pin),
-    dht(pin, DHT22){}
+    dht(pin, DHT11){}
 
 void DHT22_sensor::begin(){
     dht.begin();
@@ -18,7 +18,7 @@ void DHT22_sensor::DHT22Taskinternal(){
     while(1){
         float temperature = readTemperature();
         float humidity = readHumidity();
-        vTaskDelay(5*60*1000 / portTICK_PERIOD_MS);
+        vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
 }
 void DHT22_sensor::DHT22Task(void *param){

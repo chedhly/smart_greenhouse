@@ -42,7 +42,7 @@ void SSI3430_01A_Manager::taskloop() {
         } else {
             valve2->close();
         }
-        vTaskDelay(5*60*1000 / portTICK_PERIOD_MS);
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }
 void SSI3430_01A_Manager::STARTTask() {

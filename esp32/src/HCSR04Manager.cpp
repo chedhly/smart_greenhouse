@@ -17,7 +17,7 @@ void HCSR04Manager::taskloop() {
         US1->mesureDistance();
         US2->mesureDistance();  
         US3->mesureDistance();
-        vTaskDelay(5*60*1000 / portTICK_PERIOD_MS);
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }
 

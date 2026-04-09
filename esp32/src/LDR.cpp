@@ -9,7 +9,7 @@ int LDR::readvalue(){
 
 void LDR::LDRTaskinternal(){
     while (true){
-        int vlaure = readvalue();
+        int value = readvalue();
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
 }
@@ -20,4 +20,7 @@ void LDR::LDRTask(void *p){
 }
 void LDR ::LDRstartTask(){
     xTaskCreate(LDRTask, "LDR Task", 2048, this, 1, NULL);
+}
+int LDR::getvalue(){
+    return value;
 }

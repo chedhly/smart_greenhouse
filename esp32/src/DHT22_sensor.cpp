@@ -18,6 +18,11 @@ void DHT22_sensor::DHT22Taskinternal(){
     while(1){
         float temperature = readTemperature();
         float humidity = readHumidity();
+        if (!isnan(temperature) && !isnan(humidity)) {
+            temp = temperature;
+            hum = humidity;
+        }
+
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
 }
@@ -27,4 +32,10 @@ void DHT22_sensor::DHT22Task(void *param){
 }
 void DHT22_sensor::DHT22startTask(){
     xTaskCreate(DHT22Task, "DHT22 Task", 4096 , this, 1, NULL);
+}
+float DHT22_sensor::getTemperature(){
+    return temp;
+}
+float DHT22_sensor::getHumidity(){
+    return hum;
 }

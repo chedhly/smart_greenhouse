@@ -2,12 +2,11 @@
 #include "HCSR04.h"
 #include "SSI3430-01A.h"
 #include "DHT22_sensor.h"
-#include "HCSR04Manager.h"
-#include "SSI3430-01AManager.h"
 #include "DS18B20.h"
 #include "LDR.h"
 #include "Light.h"
-#include "Light_Manager.h"
+#include "Fan.h"
+
 
 
 const int US1_TRIG_PIN = 25;
@@ -23,6 +22,7 @@ const int LDR_PIN = 33;
 const int VALVE1_PIN = 13;
 const int VALVE2_PIN = 5;
 const int lamp_PIN = 19;
+const int fan_PIN = 23;
 
 
 HCSR04 UStank(US1_TRIG_PIN, US1_ECHO_PIN);
@@ -35,10 +35,12 @@ LDR ldr(LDR_PIN);
 SSI3430_01A valve1 (VALVE1_PIN);
 SSI3430_01A valve2 (VALVE2_PIN);
 Light lamp(lamp_PIN);
+Fan fan(fan_PIN);
 
 HCSR04Manager HCSR04manager(&UStank, &USAtrad, &USAhyd);
 SSI3430_01A_Manager valveManager(&valve1, &valve2, &USAtrad, &USAhyd);
 light_manager lightManager(&ldr, &lamp);
+Fan_Manager fanManager(&fan, &dht22);
 
 
 void setup() {
@@ -48,10 +50,13 @@ void setup() {
   valve2.begin();
   ds18b20.begin();
   lamp.begin();
+  fan.begin();
 
   dht22.DHT22startTask();
-  ds18b20.DS18B20startTask();
+  ds18b20.startTask();
   ldr.LDRstartTask();
+  fanManager.STARTTask();
+
 
   HCSR04manager.STARTTask();
   valveManager.STARTTask();

@@ -6,20 +6,39 @@ HCSR04::HCSR04(int trigPin, int echoPin) {
     pinMode(trig, OUTPUT);
     pinMode(echo, INPUT);
 }
-long HCSR04::getDistance(long x) {
+void HCSR04::mesureWaterLevel(long x) {
     digitalWrite(trig, LOW);
     delayMicroseconds(2);
     digitalWrite(trig, HIGH);
     delayMicroseconds(10);
     digitalWrite(trig, LOW);
     long duration = pulseIn(echo, HIGH);
-    long distance = x- duration * 0.034 / 2 ;
-    return distance;
+    waterlevel = x- duration * 0.034 / 2 ;
 }
-void HCSR04::mesureDistance() {
+
+HCSR04Manager::HCSR04Manager(HCSR04 *sensor1, HCSR04 *sensor2, HCSR04 *sensor3) {
+    US1 = sensor1;
+    US2 = sensor2;
+    US3 = sensor3;
+}
+
+void HCSR04Manager::task(void *param) {
+    HCSR04Manager *manager = (HCSR04Manager *)param;
+    manager->taskloop();
+}
+
+void HCSR04Manager::taskloop() {
     while(1){
-        long distance = getDistance(100);
-        Serial.print("Distance: "); 
-        Serial.println(distance);
+        US1->mesureWaterLevel(100);
+        US2->mesureWaterLevel(50);
+        US3->mesureWaterLevel(50);
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
+}
+
+void HCSR04Manager::STARTTask() {
+    xTaskCreate(task, "HCSR04 Task", 4096 , this, 1, NULL);
+}
+float HCSR04::getWaterLevel() {
+    return waterlevel;
 }

@@ -1,27 +1,25 @@
-#ifndef LIGHT_H
-#define LIGHT_H
+#ifndef FAN_H
+#define FAN_H
 #include <Arduino.h>
-#include "LDR.h"
-class Light{
+#include "DHT22_sensor.h"
+
+class Fan {
     int pin;
     public:
-    Light(int pin);
+    Fan(int pin);
     void begin();
     void on();
     void off();
-
 };
-class light_manager{
+class Fan_Manager{
     public:
-    light_manager(LDR *ldr, Light *light);
+    Fan_Manager(Fan *fan, DHT22_sensor *dht22);
     void STARTTask();
     private:
-    LDR *ldr;
-    Light *light;
+    Fan *fan;
+    DHT22_sensor *dht22;
     static void task(void *param);
     void taskloop();
 };
-
-
 
 #endif

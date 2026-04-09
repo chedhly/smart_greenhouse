@@ -1,78 +1,94 @@
 #include "DS18B20.h"
 
+// Constructor
+DS18B20::DS18B20(int pin)
+    : pin(pin), oneWire(pin), sensors(&oneWire),
+      sensorCount(0), pondtrdTemp(0), pondhydTemp(0) {}
 
-// Array to store sensor addresses
-DeviceAddress sensorAddresses[2];
-int sensorCount = 0;
-
-DS18B20::DS18B20(int pin):
-    pin(pin),
-    oneWire(pin),
-    sensors(&oneWire) {}
-
-void DS18B20::begin(){
+// Init
+void DS18B20::begin() {
     sensors.begin();
-    
-    // Discover all sensors on the bus
+
     sensorCount = sensors.getDeviceCount();
-    Serial.print("Number of DS18B20 sensors found: ");
+
+    Serial.print("Number of DS18B20 sensors: ");
     Serial.println(sensorCount);
-    
-    // Store addresses of all found sensors
+
     for (int i = 0; i < sensorCount && i < 2; i++) {
-        sensors.getAddress(sensorAddresses[i], i);
-        Serial.print("Sensor ");
-        Serial.print(i);
-        Serial.print(" address: ");
-        printAddress(sensorAddresses[i]);
+        if (sensors.getAddress(sensorAddresses[i], i)) {
+            Serial.print("Sensor ");
+            Serial.print(i);
+            Serial.print(" address: ");
+            printAddress(sensorAddresses[i]);
+        }
     }
 }
 
-float DS18B20::readWTemperature(){
-    // Request temperatures from all sensors on the bus
+// Read temperatures (internal)
+void DS18B20::readWTemperature() {
     sensors.requestTemperatures();
-    
-    // Read and sum temperatures from all sensors
-    float pondtrdTemp = 0.0;
-    float pondhydTemp = 0.0;
-    float temp[2];
-    for (int i = 0; i < sensorCount; i++) {
-        temp[i] = sensors.getTempC(sensorAddresses[i]);
+
+    if (sensorCount >= 1) {
+        float t = sensors.getTempC(sensorAddresses[0]);
+        if (t != DEVICE_DISCONNECTED_C) {
+            pondtrdTemp = t;
+        }
     }
-    pondtrdTemp = temp[0];
-    pondhydTemp = temp[1];
-    return (pondhydTemp, pondtrdTemp);
+
+    if (sensorCount >= 2) {
+        float t = sensors.getTempC(sensorAddresses[1]);
+        if (t != DEVICE_DISCONNECTED_C) {
+            pondhydTemp = t;
+        }
+    }
 }
 
-void DS18B20::printAddress(DeviceAddress deviceAddress){
-    for (int i = 0; i < 8; i++){
+// Print address
+void DS18B20::printAddress(DeviceAddress deviceAddress) {
+    for (int i = 0; i < 8; i++) {
         if (deviceAddress[i] < 16) Serial.print("0");
         Serial.print(deviceAddress[i], HEX);
     }
     Serial.println();
 }
 
-void DS18B20::DS18B20Taskinternal(){
-    while(1){
-        float pondhydTemp, pondtrdTemp;
-        (pondhydTemp, pondtrdTemp) = readWTemperature();
-        Serial.print("Pond Hydro Temperature: ");
-        Serial.print(pondhydTemp);
-        Serial.println("°C");
-        Serial.print("Pond TRD Temperature: ");
-        Serial.print(pondtrdTemp);  
-        Serial.println("°C");
-        
-        // Delay for 5 minutes (same as other sensors)
+// RTOS loop
+void DS18B20::DS18B20Taskinternal() {
+    while (true) {
+        readWTemperature();
+
+        Serial.print("TRD Temp: ");
+        Serial.print(pondtrdTemp);
+        Serial.print(" °C | HYD Temp: ");
+        Serial.println(pondhydTemp);
+
         vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }
 
-void DS18B20::DS18B20Task(void *param){
+// Task wrapper
+void DS18B20::DS18B20Task(void *param) {
     DS18B20 *sensor = (DS18B20 *)param;
     sensor->DS18B20Taskinternal();
 }
 
-void DS18B20::DS18B20startTask(){
-    xTaskCreate(DS18B20Task, "DS18B20 Task", 4096, this, 1, NULL);
+// Start task
+void DS18B20::startTask() {
+    xTaskCreate(
+        DS18B20Task,
+        "DS18B20 Task",
+        4096,
+        this,
+        1,
+        NULL
+    );
+}
+
+// Getters
+float DS18B20::getTradTemp() {
+    return pondtrdTemp;
+}
+
+float DS18B20::getHydTemp() {
+    return pondhydTemp;
 }

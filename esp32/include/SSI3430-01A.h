@@ -2,6 +2,7 @@
 #ifndef SSI3430_01A_H
 #define SSI3430_01A_H
 #include <Arduino.h>
+#include "HCSR04.h"
 
 class SSI3430_01A {
     int pin;
@@ -11,6 +12,16 @@ class SSI3430_01A {
     void begin();
     void open();
     void close();
+};
+class SSI3430_01A_Manager {
+    public:
+    SSI3430_01A_Manager(SSI3430_01A *valve1, SSI3430_01A *valve2, HCSR04 *US2, HCSR04 *US3);
+    void STARTTask();
+    private:
+    SSI3430_01A *valve1, *valve2;
+    HCSR04 *US2, *US3;
+    static void task(void *param);
+    void taskloop();
 };
 
 

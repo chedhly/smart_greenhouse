@@ -1,21 +1,38 @@
 #ifndef DS18B20_H
 #define DS18B20_H
-#include <OneWire.h>
-#include <DallasTemperature.h>  
+
 #include <Arduino.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 class DS18B20 {
+private:
     int pin;
     OneWire oneWire;
     DallasTemperature sensors;
-    float readWTemperature();
-    void DS18B20Taskinternal();
+
+    DeviceAddress sensorAddresses[2];
+    int sensorCount;
+
+    // Shared values
+    float pondtrdTemp;
+    float pondhydTemp;
+
+    void readWTemperature();
     void printAddress(DeviceAddress deviceAddress);
-    public:
+    void DS18B20Taskinternal();
+
+public:
     DS18B20(int pin);
+
     void begin();
+
     static void DS18B20Task(void *param);
-    void DS18B20startTask();
+    void startTask();
+
+    // Getters
+    float getTradTemp();
+    float getHydTemp();
 };
 
 #endif

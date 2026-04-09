@@ -3,14 +3,14 @@
 #include <Arduino.h>
 
 class LDR{
-    int pin;
+    int pin, value;
+    int readvalue();
     void LDRTaskinternal();
     public:
-    int readvalue();
     LDR(int pin);
     static void LDRTask(void *param);
     void LDRstartTask();
-
+    int getvalue();
 
 };
 

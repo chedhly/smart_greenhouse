@@ -7,8 +7,9 @@
 #include "Light.h"
 #include "Fan.h"
 #include "TDS.h"
+#include "PH.h"
 
-
+const float PH_CALIBRATION_OFFSET = 3.5; // Adjust this value based on calibration results
 
 const int US1_TRIG_PIN = 25;
 const int US1_ECHO_PIN = 26;
@@ -19,7 +20,8 @@ const int US3_ECHO_PIN = 22;
 const int DHT22_PIN = 16  ;
 const int DS18B20_PIN = 17;
 const int LDR_PIN = 33;
-const int TDS_PIN = 32;
+const int TDS_PIN = 34;
+const int PH_PIN = 32;
 
 const int VALVE1_PIN = 13;
 const int VALVE2_PIN = 5;
@@ -34,6 +36,7 @@ DHT22_sensor dht22(DHT22_PIN);
 DS18B20 ds18b20(DS18B20_PIN);
 LDR ldr(LDR_PIN);
 TDS tds(TDS_PIN);
+PH phSensor(PH_PIN, PH_CALIBRATION_OFFSET);
 
 SSI3430_01A valve1 (VALVE1_PIN);
 SSI3430_01A valve2 (VALVE2_PIN);
@@ -61,6 +64,7 @@ void setup() {
   ldr.LDRstartTask();
   fanManager.STARTTask();
   tdsManager.startTask();
+  phSensor.PHstartTask();
 
 
   HCSR04manager.STARTTask();
@@ -82,6 +86,8 @@ void loop() {
   Serial.println(ldr.getvalue());
   Serial.print("TDS Value: ");
   Serial.println(tds.getTDS()); 
+  Serial.print("pH Value: ");
+  Serial.println(phSensor.getPH());
   delay(3000);
 
 }

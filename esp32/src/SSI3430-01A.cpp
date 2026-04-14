@@ -1,5 +1,7 @@
 #include "SSI3430-01A.h"
-bool alert = false;
+
+bool alert1 = false;
+bool alert2 = false;
 
 SSI3430_01A::SSI3430_01A(int P):
     pin(P){}
@@ -25,8 +27,6 @@ void SSI3430_01A_Manager::task(void *param) {
     manager->taskloop();
 }
 void SSI3430_01A_Manager::taskloop() {
-    bool alert1 = false;
-    bool alert2 = false;
     while(1){
         long distance1 = US2->getWaterLevel();
         long distance2 = US3->getWaterLevel();

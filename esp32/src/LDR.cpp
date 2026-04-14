@@ -10,7 +10,7 @@ int LDR::readvalue(){
 void LDR::LDRTaskinternal(){
     while (true){
         int value = readvalue();
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }
 void LDR::LDRTask(void *p){

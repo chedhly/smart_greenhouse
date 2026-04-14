@@ -23,7 +23,7 @@ void DHT22_sensor::DHT22Taskinternal(){
             hum = humidity;
         }
 
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }
 void DHT22_sensor::DHT22Task(void *param){

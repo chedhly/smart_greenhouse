@@ -26,7 +26,7 @@ void Fan_Manager::taskloop() {
         } else {
             fan->off();
         }
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }
 void Fan_Manager::STARTTask() {

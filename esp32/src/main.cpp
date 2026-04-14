@@ -6,6 +6,7 @@
 #include "LDR.h"
 #include "Light.h"
 #include "Fan.h"
+#include "TDS.h"
 
 
 
@@ -18,6 +19,7 @@ const int US3_ECHO_PIN = 22;
 const int DHT22_PIN = 16  ;
 const int DS18B20_PIN = 17;
 const int LDR_PIN = 33;
+const int TDS_PIN = 32;
 
 const int VALVE1_PIN = 13;
 const int VALVE2_PIN = 5;
@@ -31,6 +33,7 @@ HCSR04 USAhyd(US3_TRIG_PIN, US3_ECHO_PIN);
 DHT22_sensor dht22(DHT22_PIN);
 DS18B20 ds18b20(DS18B20_PIN);
 LDR ldr(LDR_PIN);
+TDS tds(TDS_PIN);
 
 SSI3430_01A valve1 (VALVE1_PIN);
 SSI3430_01A valve2 (VALVE2_PIN);
@@ -41,6 +44,7 @@ HCSR04Manager HCSR04manager(&UStank, &USAtrad, &USAhyd);
 SSI3430_01A_Manager valveManager(&valve1, &valve2, &USAtrad, &USAhyd);
 light_manager lightManager(&ldr, &lamp);
 Fan_Manager fanManager(&fan, &dht22);
+TDS_Manager tdsManager(&tds, &ds18b20);
 
 
 void setup() {
@@ -56,6 +60,7 @@ void setup() {
   ds18b20.startTask();
   ldr.LDRstartTask();
   fanManager.STARTTask();
+  tdsManager.startTask();
 
 
   HCSR04manager.STARTTask();
@@ -64,5 +69,20 @@ void setup() {
 }
 
 void loop() {
+
+  Serial.print("Temperature: ");
+  Serial.print(dht22.getTemperature());
+  Serial.print(" °C, Humidity: ");
+  Serial.print(dht22.getHumidity());
+  Serial.print(" %, TradTemp: ");
+  Serial.print(ds18b20.getTradTemp());
+  Serial.print(" °C, HydTemp: ");
+  Serial.println(ds18b20.getHydTemp());
+  Serial.print(" LDR Value: ");
+  Serial.println(ldr.getvalue());
+  Serial.print("TDS Value: ");
+  Serial.println(tds.getTDS()); 
+  delay(3000);
+
 }
 

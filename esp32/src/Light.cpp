@@ -25,7 +25,7 @@ void light_manager::taskloop() {
         } else {
             light->off();
         }
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }
 void light_manager::STARTTask() {

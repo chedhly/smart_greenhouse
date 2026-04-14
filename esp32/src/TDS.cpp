@@ -1,5 +1,5 @@
 #include"TDS.h"
-TDS::TDS(int pin): pin(pin), value(0) {}
+TDS::TDS(int pin): pin(pin) {}
 
 float TDS::readVoltage() {
     float sum = 0;

@@ -8,8 +8,10 @@
 #include "Fan.h"
 #include "TDS.h"
 #include "PH.h"
+#include "DJS-1.h"
 
 const float PH_CALIBRATION_OFFSET = 3.5; // Adjust this value based on calibration results
+const float klow = 0.5, khigh = 1.5; // Adjust these values based on calibration results for EC sensor
 
 const int US1_TRIG_PIN = 25;
 const int US1_ECHO_PIN = 26;
@@ -22,6 +24,7 @@ const int DS18B20_PIN = 17;
 const int LDR_PIN = 33;
 const int TDS_PIN = 34;
 const int PH_PIN = 32;
+const int DJS1_PIN=35;
 
 const int VALVE1_PIN = 13;
 const int VALVE2_PIN = 5;
@@ -37,6 +40,7 @@ DS18B20 ds18b20(DS18B20_PIN);
 LDR ldr(LDR_PIN);
 TDS tds(TDS_PIN);
 PH phSensor(PH_PIN, PH_CALIBRATION_OFFSET);
+DJS_1 djs1(DJS1_PIN, klow, khigh);
 
 SSI3430_01A valve1 (VALVE1_PIN);
 SSI3430_01A valve2 (VALVE2_PIN);
@@ -48,6 +52,7 @@ SSI3430_01A_Manager valveManager(&valve1, &valve2, &USAtrad, &USAhyd);
 light_manager lightManager(&ldr, &lamp);
 Fan_Manager fanManager(&fan, &dht22);
 TDS_Manager tdsManager(&tds, &ds18b20);
+DJS_1_Manager djs1Manager(&djs1, &ds18b20);
 
 
 void setup() {
@@ -66,7 +71,7 @@ void setup() {
   tdsManager.startTask();
   phSensor.PHstartTask();
 
-
+  djs1Manager.STARTTask();
   HCSR04manager.STARTTask();
   valveManager.STARTTask();
   lightManager.STARTTask();
@@ -88,6 +93,8 @@ void loop() {
   Serial.println(tds.getTDS()); 
   Serial.print("pH Value: ");
   Serial.println(phSensor.getPH());
+  Serial.print("EC Value:");
+  Serial.println(djs1.getEC());
   delay(3000);
 
 }

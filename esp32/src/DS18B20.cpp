@@ -56,11 +56,11 @@ void DS18B20::printAddress(DeviceAddress deviceAddress) {
 void DS18B20::DS18B20Taskinternal() {
     while (true) {
         readWTemperature();
-
-        Serial.print("TRD Temp: ");
-        Serial.print(pondtrdTemp);
-        Serial.print(" °C | HYD Temp: ");
-        Serial.println(pondhydTemp);
+        xSemaphoreTake(dataMutex, portMAX_DELAY);
+        sensorData.tradtemp = pondtrdTemp;
+        sensorData.hydrtemp = pondhydTemp;
+        sensorData.timestamp = millis();
+        xSemaphoreGive(dataMutex);
 
         vTaskDelay(3000 / portTICK_PERIOD_MS);
     }

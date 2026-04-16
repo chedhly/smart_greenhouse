@@ -1,9 +1,8 @@
-#ifndef DS18B20_H
-#define DS18B20_H
-
+#pragma once
 #include <Arduino.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include "globals.h"
 
 class DS18B20 {
 private:
@@ -34,5 +33,3 @@ public:
     float getTradTemp();
     float getHydTemp();
 };
-
-#endif

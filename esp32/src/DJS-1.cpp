@@ -21,9 +21,7 @@ float DJS_1::readEC(float temp){
     ECvalue = ECvalue / (1.0 + 0.02 * (temp - 25.0));
     return ECvalue;
 }
-float DJS_1::getEC(){
-    return ECvalue;
-}
+
 DJS_1_Manager::DJS_1_Manager(DJS_1 *djs1 , DS18B20 *hydrotemp):djs1Sensor(djs1), hydrotempSensor(hydrotemp) {}
 void DJS_1_Manager::STARTTask(){
     xTaskCreate(task,"DJS_1 Task",4096,this,1,NULL);
@@ -36,6 +34,10 @@ void DJS_1_Manager::taskloop(){
     while(1){
         float temp = hydrotempSensor->getHydTemp();
         float ecValue = djs1Sensor->readEC(temp);  
+        xSemaphoreTake(dataMutex, portMAX_DELAY);
+        sensorData.ec = ecValue;    
+        sensorData.timestamp = millis();
+        xSemaphoreGive(dataMutex);
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
 }

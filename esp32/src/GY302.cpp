@@ -4,13 +4,17 @@ GY302::GY302(int sda, int scl):
     SDA(sda), SCL(scl){
 }
 
-float GY302::readvalue(){
+float GY302::readluxValue(){
     return lightMeter.readLightLevel();
 }
 
 void GY302::GY302Taskinternal(){
     while (true){
-        value = readvalue();
+        luxValue = readluxValue();
+        xSemaphoreTake(dataMutex, portMAX_DELAY);
+        sensorData.light = luxValue;
+        sensorData.timestamp = millis();
+        xSemaphoreGive(dataMutex);
         vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }
@@ -22,8 +26,8 @@ void GY302::GY302Task(void *p){
 void GY302 ::GY302startTask(){
     xTaskCreate(GY302Task, "GY302 Task", 2048, this, 1, NULL);
 }
-float GY302::getvalue(){
-    return value;
+float GY302::getluxValue(){
+    return luxValue;
 }
 void GY302::begin(){
     Wire.begin(SDA, SCL);

@@ -1,7 +1,7 @@
-#ifndef DJS_1_H
-#define DJS_1_H
+#pragma once
 #include <Arduino.h>
 #include "DS18B20.h"
+#include "globals.h"
 
 class DJS_1 {
     int pin;
@@ -10,7 +10,6 @@ class DJS_1 {
     float readEC(float temperature);
     public:
     DJS_1(int pin, float klow, float khigh);
-    float getEC();
     friend class DJS_1_Manager;
 };
 class DJS_1_Manager {
@@ -25,4 +24,3 @@ class DJS_1_Manager {
 
 
 
-#endif

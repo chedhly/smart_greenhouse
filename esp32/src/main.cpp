@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "globals.h"
 #include "HCSR04.h"
 #include "SSI3430-01A.h"
 #include "DHT22_sensor.h"
@@ -9,6 +10,10 @@
 #include "TDS.h"
 #include "PH.h"
 #include "DJS-1.h"
+
+
+DATA sensorData={};
+SemaphoreHandle_t dataMutex=nullptr;
 
 const float PH_CALIBRATION_OFFSET = 3.5; // Adjust this value based on calibration results
 const float klow = 0.5, khigh = 1.5; // Adjust these values based on calibration results for EC sensor
@@ -59,6 +64,9 @@ DJS_1_Manager djs1Manager(&djs1, &ds18b20);
 
 void setup() {
   Serial.begin(115200);
+
+  dataMutex = xSemaphoreCreateMutex();
+
   dht22.begin();
   valve1.begin();
   valve2.begin();
@@ -80,24 +88,6 @@ void setup() {
 }
 
 void loop() {
-
-  Serial.print("Temperature: ");
-  Serial.print(dht22.getTemperature());
-  Serial.print(" °C, Humidity: ");
-  Serial.print(dht22.getHumidity());
-  Serial.print(" %, TradTemp: ");
-  Serial.print(ds18b20.getTradTemp());
-  Serial.print(" °C, HydTemp: ");
-  Serial.println(ds18b20.getHydTemp());
-  Serial.print(" GY302 Value: ");
-  Serial.println(gy302.getvalue());
-  Serial.print("TDS Value: ");
-  Serial.println(tds.getTDS()); 
-  Serial.print("pH Value: ");
-  Serial.println(phSensor.getPH());
-  Serial.print("EC Value:");
-  Serial.println(djs1.getEC());
-  delay(3000);
 
 }
 

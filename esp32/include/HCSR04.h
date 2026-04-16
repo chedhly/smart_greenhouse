@@ -1,12 +1,12 @@
 //this is the header file of the HCSR04 class, witch is an Ultrasonic Sensor used to determine the fulness of the tank and the water level in the azolla ponds.
-#ifndef HCSR04_H
-#define HCSR04_H
+#pragma once
 #include <Arduino.h>
+#include "globals.h"
 
 class HCSR04 {
     int trig,echo;
     float waterlevel;
-    void mesureWaterLevel(long x);
+    float mesureWaterLevel(long x);
 
     public:
     HCSR04(int trigPin, int echoPin);
@@ -24,4 +24,3 @@ class HCSR04Manager {
     static void task(void *param);
     void taskloop();
 };
-#endif

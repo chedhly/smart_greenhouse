@@ -1,7 +1,7 @@
-#ifndef TDS_H
-#define TDS_H
+#pragma once
 #include <Arduino.h>
 #include "DS18B20.h"
+#include "globals.h"
 
 class TDS {
 private:
@@ -12,7 +12,6 @@ private:
 
 public:
     TDS(int pin);
-    float getTDS();
 
 friend class TDS_Manager;
 };
@@ -29,4 +28,3 @@ public:
     TDS_Manager(TDS *tdsSensor, DS18B20 *tempSensor);
     void startTask();
 };
-#endif

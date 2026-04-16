@@ -1,4 +1,5 @@
 #include"TDS.h"
+#include "globals.h"
 TDS::TDS(int pin): pin(pin) {}
 
 float TDS::readVoltage() {
@@ -27,9 +28,6 @@ float TDS::readTDS(float temperature) {
     return value;
 }
 
-float TDS::getTDS() {
-    return value;
-}
 
 
 
@@ -52,6 +50,10 @@ void TDS_Manager::taskloop() {
         float temperature = tempSensor->getTradTemp();
 
         float tdsValue = tdsSensor->readTDS(temperature);
+        xSemaphoreTake(dataMutex, portMAX_DELAY);
+        sensorData.tds = tdsValue;    
+        sensorData.timestamp = millis();
+        xSemaphoreGive(dataMutex);      
 
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }

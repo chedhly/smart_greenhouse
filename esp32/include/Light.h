@@ -1,5 +1,4 @@
-#ifndef LIGHT_H
-#define LIGHT_H
+#pragma once
 #include <Arduino.h>
 #include "GY302.h"
 class Light{
@@ -23,5 +22,3 @@ class light_manager{
 };
 
 
-
-#endif

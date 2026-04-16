@@ -12,6 +12,10 @@ float PH::readPH() {
 void PH::PHTaskInternal() {
     while (1) {
         readPH();
+        xSemaphoreTake(dataMutex, portMAX_DELAY);
+        sensorData.ph = phValue;
+        sensorData.timestamp = millis();
+        xSemaphoreGive(dataMutex);
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
 }
@@ -21,7 +25,4 @@ void PH::PHTask(void *param) {
 }
 void PH::PHstartTask() {
     xTaskCreate(PHTask, "PH Task", 4096, this, 1, NULL);
-}
-float PH::getPH() {
-    return phValue;
 }

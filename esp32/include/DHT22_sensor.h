@@ -1,7 +1,7 @@
-#ifndef DHT22_SENSOR_H
-#define DHT22_SENSOR_H
+#pragma once
 #include <Arduino.h>
 #include <DHT.h>
+#include "globals.h"
 
 class DHT22_sensor {
     int pin;
@@ -20,4 +20,3 @@ class DHT22_sensor {
     
 };
 
-#endif

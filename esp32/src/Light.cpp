@@ -19,7 +19,7 @@ void light_manager::task(void *param) {
 }
 void light_manager::taskloop() {
     while (true) {
-        int value = gy302->getvalue();
+        int value = gy302->getluxValue();
         if (value == LOW) {
             light->on();
         } else {

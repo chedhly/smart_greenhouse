@@ -6,14 +6,15 @@ HCSR04::HCSR04(int trigPin, int echoPin) {
     pinMode(trig, OUTPUT);
     pinMode(echo, INPUT);
 }
-void HCSR04::mesureWaterLevel(long x) {
+float HCSR04::mesureWaterLevel(long x) {
     digitalWrite(trig, LOW);
     delayMicroseconds(2);
     digitalWrite(trig, HIGH);
     delayMicroseconds(10);
     digitalWrite(trig, LOW);
     long duration = pulseIn(echo, HIGH);
-    waterlevel = x- duration * 0.034 / 2 ;
+     waterlevel = x- duration * 0.034 / 2 ;
+     return waterlevel;
 }
 
 HCSR04Manager::HCSR04Manager(HCSR04 *sensor1, HCSR04 *sensor2, HCSR04 *sensor3) {
@@ -29,9 +30,16 @@ void HCSR04Manager::task(void *param) {
 
 void HCSR04Manager::taskloop() {
     while(1){
-        US1->mesureWaterLevel(100);
-        US2->mesureWaterLevel(50);
-        US3->mesureWaterLevel(50);
+        float waterLevel1 = US1->mesureWaterLevel(100);
+        float waterLevel2 = US2->mesureWaterLevel(50);
+        float waterLevel3 = US3->mesureWaterLevel(50);
+        xSemaphoreTake(dataMutex, portMAX_DELAY);
+        sensorData.tankWlevel = waterLevel1;
+        sensorData.traddWlevel = waterLevel2;
+        sensorData.hydrdWlevel = waterLevel3;
+        sensorData.timestamp = millis();
+        xSemaphoreGive(dataMutex);
+
         vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }

@@ -1,6 +1,5 @@
 //this is the header of the class for the Solenoid valve that control the water flow in the changment of the azolla water in the greenhouse.
-#ifndef SSI3430_01A_H
-#define SSI3430_01A_H
+#pragma once
 #include <Arduino.h>
 #include "HCSR04.h"
 
@@ -24,5 +23,3 @@ class SSI3430_01A_Manager {
     void taskloop();
 };
 
-
-#endif

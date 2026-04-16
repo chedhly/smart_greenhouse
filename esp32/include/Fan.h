@@ -1,5 +1,4 @@
-#ifndef FAN_H
-#define FAN_H
+#pragma once
 #include <Arduino.h>
 #include "DHT22_sensor.h"
 
@@ -22,4 +21,3 @@ class Fan_Manager{
     void taskloop();
 };
 
-#endif

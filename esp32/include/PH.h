@@ -1,6 +1,6 @@
-#ifndef PH_H
-#define PH_H
+#pragma once
 #include <Arduino.h>
+#include "globals.h"
 
 class PH {
     int pin;
@@ -11,8 +11,6 @@ class PH {
     PH(int pin, float calibrationOffset);
     static void PHTask(void *param);
     void PHstartTask();
-    float getPH();
 
 };
 
-#endif

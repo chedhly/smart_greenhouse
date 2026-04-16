@@ -11,7 +11,7 @@ void Light::on(){
 void Light::off(){
     digitalWrite(pin, LOW);
 }
-light_manager::light_manager(LDR *ldr, Light *light): ldr(ldr), light(light){}
+light_manager::light_manager(GY302 *gy302, Light *light): gy302(gy302), light(light){}
 
 void light_manager::task(void *param) {
     light_manager *manager = (light_manager *)param;
@@ -19,7 +19,7 @@ void light_manager::task(void *param) {
 }
 void light_manager::taskloop() {
     while (true) {
-        int value = ldr->getvalue();
+        int value = gy302->getvalue();
         if (value == LOW) {
             light->on();
         } else {

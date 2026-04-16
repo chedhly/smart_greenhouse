@@ -1,7 +1,7 @@
 #ifndef LIGHT_H
 #define LIGHT_H
 #include <Arduino.h>
-#include "LDR.h"
+#include "GY302.h"
 class Light{
     int pin;
     public:
@@ -13,10 +13,10 @@ class Light{
 };
 class light_manager{
     public:
-    light_manager(LDR *ldr, Light *light);
+    light_manager(GY302 *gy302, Light *light);
     void STARTTask();
     private:
-    LDR *ldr;
+    GY302 *gy302;
     Light *light;
     static void task(void *param);
     void taskloop();

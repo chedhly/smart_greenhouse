@@ -17,6 +17,7 @@ class Fan_Manager{
     private:
     Fan *fan;
     DHT22_sensor *dht22;
+    bool state;
     static void task(void *param);
     void taskloop();
 };

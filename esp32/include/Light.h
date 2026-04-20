@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include "GY302.h"
+#include "globals.h"
 class Light{
     int pin;
     public:
@@ -15,6 +16,7 @@ class light_manager{
     light_manager(GY302 *gy302, Light *light);
     void STARTTask();
     private:
+    bool state;
     GY302 *gy302;
     Light *light;
     static void task(void *param);

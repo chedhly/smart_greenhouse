@@ -1,3 +1,4 @@
+//this is the header file of the DHT22 class, witch is a sensor that mesure tempreture and humidity of the greenhouse.
 #pragma once
 #include <Arduino.h>
 #include <DHT.h>

@@ -1,3 +1,4 @@
+//this is the header file of the DS18B20 class, witch is a sensor that mesure the water tempreture op the ponds.
 #pragma once
 #include <Arduino.h>
 #include <OneWire.h>

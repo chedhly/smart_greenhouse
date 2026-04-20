@@ -1,4 +1,4 @@
-#pragma once
+//this is the header file of the DJS-1 class, witch is an electric conductivity sensor that determin how much nutrument are in the water pond.
 #include <Arduino.h>
 #include "DS18B20.h"
 #include "globals.h"

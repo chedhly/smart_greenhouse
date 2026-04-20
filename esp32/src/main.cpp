@@ -10,10 +10,14 @@
 #include "TDS.h"
 #include "PH.h"
 #include "DJS-1.h"
+#include <WiFi.h>
+#include <PubSubClient.h>
 
 
-DATA sensorData={};
-SemaphoreHandle_t dataMutex=nullptr;
+const char* ssid = "";
+const char* password = "";
+const char* mqttServer = "";
+const int mqttPort = 1883;
 
 const float PH_CALIBRATION_OFFSET = 3.5; // Adjust this value based on calibration results
 const float klow = 0.5, khigh = 1.5; // Adjust these values based on calibration results for EC sensor
@@ -35,8 +39,14 @@ const int SCL_PIN = 22;
 
 const int VALVE1_PIN = 13;
 const int VALVE2_PIN = 5;
-const int lamp_PIN = 2;
-const int fan_PIN = 15;
+const int lamp_PIN = 16;
+const int fan_PIN = 17;
+
+DATA sensorData={};
+SemaphoreHandle_t dataMutex=nullptr;
+
+WiFiClient espClient;
+PubSubClient mqttClient(espClient);
 
 
 HCSR04 UStank(US1_TRIG_PIN, US1_ECHO_PIN);
@@ -61,11 +71,66 @@ Fan_Manager fanManager(&fan, &dht22);
 TDS_Manager tdsManager(&tds, &ds18b20);
 DJS_1_Manager djs1Manager(&djs1, &ds18b20);
 
+void setupWiFi() {
+  delay(10);
+  Serial.println("Connecting to WiFi...");
+  WiFi.begin(ssid, password);
+  while (WiFi.status()!=WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("WiFi connected");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void reconnectMQTT() {
+  while (!mqttClient.connected()) {
+    Serial.print("Connecting to MQTT...");
+    if (mqttClient.connect("ESP32Client")) {
+      Serial.println("connected");
+    } else {
+      Serial.print("failed with state ");
+      Serial.print(mqttClient.state());
+      delay(2000);
+    }
+  }
+}
+
+void publishSensorData() {
+  if (!mqttClient.connected())return;
+    
+  DATA snapshot;
+  xSemaphoreTake(dataMutex, portMAX_DELAY);
+  snapshot = sensorData;
+  xSemaphoreGive(dataMutex);
+
+  String payload = "{";
+  payload += "\"temperature\":" + String(snapshot.temperature) + ",";
+  payload += "\"humidity\":" + String(snapshot.humidity) + ",";
+  payload += "\"tankWlevel\":" + String(snapshot.tankWlevel) + ",";
+  payload += "\"traddWlevel\":" + String(snapshot.traddWlevel) + ",";
+  payload += "\"hydrdWlevel\":" + String(snapshot.hydrdWlevel) + ",";
+  payload += "\"tradtemp\":" + String(snapshot.tradtemp) + ",";
+  payload += "\"hydrtemp\":" + String(snapshot.hydrtemp) + ",";
+  payload += "\"light\":" + String(snapshot.light) + ",";
+  payload += "\"tds\":" + String(snapshot.tds) + ",";
+  payload += "\"ph\":" + String(snapshot.ph) + ",";
+  payload += "\"ec\":" + String(snapshot.ec) + ",";
+  payload += "\"lightStatus\":" + String(snapshot.lightStatus) + ",";
+  payload += "\"fanStatus\":" + String(snapshot.fanStatus) + ",";
+  payload += "\"timestamp\":" + String(snapshot.timestamp);
+  payload += "}";
+  mqttClient.publish("greenhouse/sensorData", payload.c_str());
+}
 
 void setup() {
   Serial.begin(115200);
 
   dataMutex = xSemaphoreCreateMutex();
+  setupWiFi();
+   mqttClient.setServer(mqttServer, mqttPort);
 
   dht22.begin();
   valve1.begin();
@@ -88,6 +153,13 @@ void setup() {
 }
 
 void loop() {
+  if (!mqttClient.connected()) {
+    reconnectMQTT();
+  }
+  mqttClient.loop();
+  publishSensorData();
+  delay(5000); // Publish every 5 seconds
+
 
 }
 

@@ -1,3 +1,4 @@
+//this is the header file of the TDS sensor class, with is used to mesure the total desolved solid in the water. 
 #pragma once
 #include <Arduino.h>
 #include "DS18B20.h"

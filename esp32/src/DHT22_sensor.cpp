@@ -2,7 +2,7 @@
 
 DHT22_sensor::DHT22_sensor(int pin):
     pin(pin),
-    dht(pin, DHT11){}
+    dht(pin, DHT22){}
 
 void DHT22_sensor::begin(){
     dht.begin();

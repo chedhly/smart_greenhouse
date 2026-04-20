@@ -23,9 +23,15 @@ void Fan_Manager::taskloop() {
         float humidity = dht22->getHumidity();
         if (temperature > 30.0 || humidity < 70.0) {
             fan->on();
+            state = true;
         } else {
             fan->off();
+            state = false;
         }
+        xSemaphoreTake(dataMutex, portMAX_DELAY);
+        sensorData.fanStatus = state;
+        sensorData.timestamp = millis();
+        xSemaphoreGive(dataMutex);
         vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }

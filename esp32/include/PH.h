@@ -1,3 +1,4 @@
+//this is the header file of the ph sensor class
 #pragma once
 #include <Arduino.h>
 #include "globals.h"

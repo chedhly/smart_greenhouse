@@ -20,11 +20,17 @@ void light_manager::task(void *param) {
 void light_manager::taskloop() {
     while (true) {
         int value = gy302->getluxValue();
-        if (value == LOW) {
+        if (value < 100) { // Adjust this threshold based on your requirements
             light->on();
+            state = true;
         } else {
             light->off();
+            state = false;
         }
+        xSemaphoreTake(dataMutex, portMAX_DELAY);
+        sensorData.lightStatus = state;
+        sensorData.timestamp = millis();
+        xSemaphoreGive(dataMutex);
         vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }

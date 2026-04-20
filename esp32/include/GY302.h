@@ -1,3 +1,4 @@
+//this is the header file of the GY302 class, witch is a sensor that mesure the light intensity in the greenhouse.
 #pragma once
 #include <Arduino.h>
 #include <Wire.h>

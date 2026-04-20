@@ -1,3 +1,4 @@
+//this is a stucture that contain all the sensor vallues that uses semaphore for real time edditing 
 #pragma once
 #include <Arduino.h>
 #include <freertos/FreeRTOS.h>
@@ -17,6 +18,8 @@ typedef struct
   float tds;
   float ph;
   float ec;
+  bool lightStatus;
+  bool fanStatus;
   
   uint32_t timestamp;
 }DATA;

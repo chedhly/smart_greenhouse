@@ -25,8 +25,9 @@ void DHT22_sensor::DHT22Taskinternal(){
         xSemaphoreTake(dataMutex, portMAX_DELAY);
         sensorData.temperature = temp;
         sensorData.humidity = hum;
-        sensorData.timestamp = millis();
         xSemaphoreGive(dataMutex);
+
+        xSemaphoreGive(dht22ready);
 
         vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
@@ -36,7 +37,7 @@ void DHT22_sensor::DHT22Task(void *param){
     sensor->DHT22Taskinternal();
 }
 void DHT22_sensor::DHT22startTask(){
-    xTaskCreate(DHT22Task, "DHT22 Task", 4096 , this, 1, NULL);
+    xTaskCreate(DHT22Task, "DHT22 Task", 2048 , this, 1, NULL);
 }
 float DHT22_sensor::getTemperature(){
     return temp;

@@ -19,6 +19,7 @@ void Fan_Manager::task(void *param) {
 }
 void Fan_Manager::taskloop() {
     while (true) {
+        xSemaphoreTake(dht22ready, portMAX_DELAY);
         float temperature = dht22->getTemperature();
         float humidity = dht22->getHumidity();
         if (temperature > 30.0 || humidity < 70.0) {
@@ -30,9 +31,7 @@ void Fan_Manager::taskloop() {
         }
         xSemaphoreTake(dataMutex, portMAX_DELAY);
         sensorData.fanStatus = state;
-        sensorData.timestamp = millis();
         xSemaphoreGive(dataMutex);
-        vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }
 void Fan_Manager::STARTTask() {

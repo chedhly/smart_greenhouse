@@ -13,8 +13,10 @@ void GY302::GY302Taskinternal(){
         luxValue = readluxValue();
         xSemaphoreTake(dataMutex, portMAX_DELAY);
         sensorData.light = luxValue;
-        sensorData.timestamp = millis();
         xSemaphoreGive(dataMutex);
+
+        xSemaphoreGive(gy302ready);
+
         vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }

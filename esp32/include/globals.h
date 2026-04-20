@@ -21,8 +21,13 @@ typedef struct
   bool lightStatus;
   bool fanStatus;
   
-  uint32_t timestamp;
 }DATA;
 
 extern DATA sensorData;
 extern SemaphoreHandle_t dataMutex;
+extern uint32_t timestamp;
+extern SemaphoreHandle_t timestampMutex;
+
+extern SemaphoreHandle_t dht22ready;
+extern SemaphoreHandle_t gy302ready;
+extern SemaphoreHandle_t hcsr04ready;

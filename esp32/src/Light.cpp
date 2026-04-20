@@ -19,6 +19,7 @@ void light_manager::task(void *param) {
 }
 void light_manager::taskloop() {
     while (true) {
+        xSemaphoreTake(gy302ready, portMAX_DELAY);
         int value = gy302->getluxValue();
         if (value < 100) { // Adjust this threshold based on your requirements
             light->on();
@@ -29,9 +30,7 @@ void light_manager::taskloop() {
         }
         xSemaphoreTake(dataMutex, portMAX_DELAY);
         sensorData.lightStatus = state;
-        sensorData.timestamp = millis();
         xSemaphoreGive(dataMutex);
-        vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }
 void light_manager::STARTTask() {

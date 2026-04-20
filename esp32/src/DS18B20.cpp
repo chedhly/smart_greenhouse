@@ -59,7 +59,6 @@ void DS18B20::DS18B20Taskinternal() {
         xSemaphoreTake(dataMutex, portMAX_DELAY);
         sensorData.tradtemp = pondtrdTemp;
         sensorData.hydrtemp = pondhydTemp;
-        sensorData.timestamp = millis();
         xSemaphoreGive(dataMutex);
 
         vTaskDelay(3000 / portTICK_PERIOD_MS);
@@ -77,7 +76,7 @@ void DS18B20::startTask() {
     xTaskCreate(
         DS18B20Task,
         "DS18B20 Task",
-        4096,
+        2048,
         this,
         1,
         NULL
@@ -86,9 +85,11 @@ void DS18B20::startTask() {
 
 // Getters
 float DS18B20::getTradTemp() {
+    readWTemperature(); // Ensure we have the latest reading
     return pondtrdTemp;
 }
 
 float DS18B20::getHydTemp() {
+    readWTemperature(); // Ensure we have the latest reading
     return pondhydTemp;
 }

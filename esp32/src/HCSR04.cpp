@@ -37,15 +37,16 @@ void HCSR04Manager::taskloop() {
         sensorData.tankWlevel = waterLevel1;
         sensorData.traddWlevel = waterLevel2;
         sensorData.hydrdWlevel = waterLevel3;
-        sensorData.timestamp = millis();
         xSemaphoreGive(dataMutex);
+
+        xSemaphoreGive(hcsr04ready);
 
         vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }
 
 void HCSR04Manager::STARTTask() {
-    xTaskCreate(task, "HCSR04 Task", 4096 , this, 1, NULL);
+    xTaskCreate(task, "HCSR04 Task", 2048 , this, 1, NULL);
 }
 float HCSR04::getWaterLevel() {
     return waterlevel;

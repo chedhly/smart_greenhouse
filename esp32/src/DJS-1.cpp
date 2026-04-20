@@ -8,6 +8,7 @@ float DJS_1::readVoltage() {
     // averaging to reduce noise
     for(int i = 0; i < 10; i++) {
         sum += analogRead(pin);
+        delay(10);
     }
 
     float avg = sum / 10.0;
@@ -24,7 +25,7 @@ float DJS_1::readEC(float temp){
 
 DJS_1_Manager::DJS_1_Manager(DJS_1 *djs1 , DS18B20 *hydrotemp):djs1Sensor(djs1), hydrotempSensor(hydrotemp) {}
 void DJS_1_Manager::STARTTask(){
-    xTaskCreate(task,"DJS_1 Task",4096,this,1,NULL);
+    xTaskCreate(task,"DJS_1 Task",2048,this,1,NULL);
 }
 void DJS_1_Manager::task(void *param){
     DJS_1_Manager *manager = (DJS_1_Manager *)param;
@@ -36,7 +37,6 @@ void DJS_1_Manager::taskloop(){
         float ecValue = djs1Sensor->readEC(temp);  
         xSemaphoreTake(dataMutex, portMAX_DELAY);
         sensorData.ec = ecValue;    
-        sensorData.timestamp = millis();
         xSemaphoreGive(dataMutex);
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }

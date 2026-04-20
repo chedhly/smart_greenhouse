@@ -9,7 +9,7 @@ class SSI3430_01A {
     public:
     SSI3430_01A(int pin);
     void begin();
-    void open();
+    void open(float l);
     void close();
 };
 class SSI3430_01A_Manager {

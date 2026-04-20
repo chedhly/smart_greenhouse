@@ -44,6 +44,11 @@ const int fan_PIN = 17;
 
 DATA sensorData={};
 SemaphoreHandle_t dataMutex=nullptr;
+uint32_t timestamp=0;
+SemaphoreHandle_t timestampMutex=nullptr;
+SemaphoreHandle_t dht22ready=nullptr;
+SemaphoreHandle_t gy302ready=nullptr;
+SemaphoreHandle_t hcsr04ready=nullptr;
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
@@ -102,33 +107,43 @@ void publishSensorData() {
   if (!mqttClient.connected())return;
     
   DATA snapshot;
+
+  xSemaphoreTake(timestampMutex, portMAX_DELAY);
+  timestamp = millis();
+  xSemaphoreGive(timestampMutex);
+
   xSemaphoreTake(dataMutex, portMAX_DELAY);
   snapshot = sensorData;
   xSemaphoreGive(dataMutex);
 
-  String payload = "{";
-  payload += "\"temperature\":" + String(snapshot.temperature) + ",";
-  payload += "\"humidity\":" + String(snapshot.humidity) + ",";
-  payload += "\"tankWlevel\":" + String(snapshot.tankWlevel) + ",";
-  payload += "\"traddWlevel\":" + String(snapshot.traddWlevel) + ",";
-  payload += "\"hydrdWlevel\":" + String(snapshot.hydrdWlevel) + ",";
-  payload += "\"tradtemp\":" + String(snapshot.tradtemp) + ",";
-  payload += "\"hydrtemp\":" + String(snapshot.hydrtemp) + ",";
-  payload += "\"light\":" + String(snapshot.light) + ",";
-  payload += "\"tds\":" + String(snapshot.tds) + ",";
-  payload += "\"ph\":" + String(snapshot.ph) + ",";
-  payload += "\"ec\":" + String(snapshot.ec) + ",";
-  payload += "\"lightStatus\":" + String(snapshot.lightStatus) + ",";
-  payload += "\"fanStatus\":" + String(snapshot.fanStatus) + ",";
-  payload += "\"timestamp\":" + String(snapshot.timestamp);
-  payload += "}";
-  mqttClient.publish("greenhouse/sensorData", payload.c_str());
+  char payload[256];
+  snprintf(payload, sizeof(payload), 
+           "{\"temperature\": %.2f, \"humidity\": %.2f, \"tankWlevel\": %.2f, \"traddWlevel\": %.2f, \"hydrdWlevel\": %.2f, \"tradtemp\": %.2f, \"hydrtemp\": %.2f, \"light\": %.2f, \"tds\": %.2f, \"ph\": %.2f, \"ec\": %.2f, \"lightStatus\": %s, \"fanStatus\": %s, \"timestamp\": %lu}",
+            snapshot.temperature,
+            snapshot.humidity,
+            snapshot.tankWlevel,
+            snapshot.traddWlevel,
+            snapshot.hydrdWlevel,
+            snapshot.tradtemp,
+            snapshot.hydrtemp,
+            snapshot.light,
+            snapshot.tds,
+            snapshot.ph,
+            snapshot.ec,
+            snapshot.lightStatus ? "true" : "false",
+            snapshot.fanStatus ? "true" : "false",
+            timestamp);
+  mqttClient.publish("greenhouse/sensorData", payload);
 }
 
 void setup() {
   Serial.begin(115200);
 
   dataMutex = xSemaphoreCreateMutex();
+  timestampMutex = xSemaphoreCreateMutex();
+  dht22ready = xSemaphoreCreateBinary();
+  gy302ready = xSemaphoreCreateBinary();
+  hcsr04ready = xSemaphoreCreateBinary();
   setupWiFi();
    mqttClient.setServer(mqttServer, mqttPort);
 

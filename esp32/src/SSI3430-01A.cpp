@@ -10,8 +10,9 @@ void SSI3430_01A::begin(){
     pinMode(pin, OUTPUT);     
     close();
 }
-void SSI3430_01A::open(){
+void SSI3430_01A::open(float level){
     digitalWrite(pin, HIGH);
+    
 }
 void SSI3430_01A::close(){
     digitalWrite(pin, LOW);
@@ -28,12 +29,13 @@ void SSI3430_01A_Manager::task(void *param) {
 }
 void SSI3430_01A_Manager::taskloop() {
     while(1){
+        xSemaphoreTake(hcsr04ready, portMAX_DELAY);
         long distance1 = US2->getWaterLevel();
         long distance2 = US3->getWaterLevel();
-        if (10 < distance1 && distance1 <= 20) {
-            valve1->open();
+        if (10 < distance1 && distance1 < 20) {
+            valve1->open(distance1);
         } else if (distance1 < 10 && !alert1) {
-            valve1->open();
+            valve1->open(distance1);
             alert1 = true;
         }else if (distance1>30 && !alert1)
         {
@@ -44,10 +46,10 @@ void SSI3430_01A_Manager::taskloop() {
         else {
             valve1->close();
         }
-        if (10<distance2 && distance2 <= 20) {
-            valve2->open();
+        if (10<distance2 && distance2 < 20) {
+            valve2->open(distance2);
         } else if (distance2 < 10 && !alert2) {
-            valve2->open();
+            valve2->open(distance2);
             alert2 = true;
         } else if (distance2 > 30 && !alert2) {
             valve2->close();
@@ -55,7 +57,6 @@ void SSI3430_01A_Manager::taskloop() {
         } else {
             valve2->close();
         }
-        vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }
 void SSI3430_01A_Manager::STARTTask() {

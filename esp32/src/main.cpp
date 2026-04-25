@@ -14,10 +14,10 @@
 #include <PubSubClient.h>
 
 
-const char* ssid = "";
-const char* password = "";
-const char* mqttServer = "";
-const int mqttPort = 1883;
+const char* ssid = ""; // TODO: Add your WiFi SSID
+const char* password = ""; // TODO: Add your WiFi password
+const char* mqttServer = ""; // TODO: Add your MQTT server address
+const int mqttPort = 1883; // TODO: Add your MQTT server port
 
 const float PH_CALIBRATION_OFFSET = 3.5; // Adjust this value based on calibration results
 const float klow = 0.5, khigh = 1.5; // Adjust these values based on calibration results for EC sensor
@@ -43,6 +43,7 @@ const int lamp_PIN = 16;
 const int fan_PIN = 17;
 
 DATA sensorData={};
+DATA lasttimepublished={};
 SemaphoreHandle_t dataMutex=nullptr;
 uint32_t timestamp=0;
 SemaphoreHandle_t timestampMutex=nullptr;
@@ -77,30 +78,63 @@ TDS_Manager tdsManager(&tds, &ds18b20);
 DJS_1_Manager djs1Manager(&djs1, &ds18b20);
 
 void setupWiFi() {
+  static unsigned long lastAttempt= 0;
+  unsigned long currentTime = millis();
+  if (currentTime - lastAttempt < 5000) return; // Only attempt to connect every 5 seconds
   delay(10);
   Serial.println("Connecting to WiFi...");
   WiFi.begin(ssid, password);
-  while (WiFi.status()!=WL_CONNECTED)
+  int attempts = 0;
+  while (WiFi.status()!=WL_CONNECTED && attempts < 20)
   {
     delay(500);
     Serial.print(".");
+    attempts++;
   }
-  Serial.println("WiFi connected");
+  if (WiFi.status()==WL_CONNECTED)
+  {
+  Serial.println("\nWiFi connected");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
+  }
+  else
+  {
+    Serial.println("Failed to connect to WiFi");
+  }
+  lastAttempt = currentTime;
+
 }
 
 void reconnectMQTT() {
-  while (!mqttClient.connected()) {
-    Serial.print("Connecting to MQTT...");
+  static unsigned long lastAttemptTime = 0;
+  unsigned long currentTime = millis();
+  if (currentTime - lastAttemptTime < 5000) return; // Only attempt to reconnect every 5 seconds
+  if (mqttClient.connected()) {
+    Serial.println("Connecting to MQTT server");
     if (mqttClient.connect("ESP32Client")) {
-      Serial.println("connected");
-    } else {
-      Serial.print("failed with state ");
-      Serial.print(mqttClient.state());
-      delay(2000);
+      Serial.println("Connected to MQTT server");
     }
+  } else {
+    Serial.print("Failed to connect to MQTT server, rc=");
+    Serial.print(mqttClient.state());
+    lastAttemptTime = currentTime;
   }
+  
+}
+bool haschanged(const DATA& a, const DATA& b) {
+  return a.temperature != b.temperature ||
+         a.humidity != b.humidity ||
+         a.tankWlevel != b.tankWlevel ||
+         a.traddWlevel != b.traddWlevel ||
+         a.hydrdWlevel != b.hydrdWlevel ||
+         a.tradtemp != b.tradtemp ||
+         a.hydrtemp != b.hydrtemp ||
+         a.light != b.light ||
+         a.tds != b.tds ||
+         a.ph != b.ph ||
+         a.ec != b.ec ||
+         a.lightStatus != b.lightStatus ||
+         a.fanStatus != b.fanStatus;
 }
 
 void publishSensorData() {
@@ -116,7 +150,10 @@ void publishSensorData() {
   snapshot = sensorData;
   xSemaphoreGive(dataMutex);
 
-  char payload[256];
+  if (!haschanged(snapshot, lasttimepublished)) {
+    return; // No significant change, skip publishing
+  }
+  char payload[512];
   snprintf(payload, sizeof(payload), 
            "{\"temperature\": %.2f, \"humidity\": %.2f, \"tankWlevel\": %.2f, \"traddWlevel\": %.2f, \"hydrdWlevel\": %.2f, \"tradtemp\": %.2f, \"hydrtemp\": %.2f, \"light\": %.2f, \"tds\": %.2f, \"ph\": %.2f, \"ec\": %.2f, \"lightStatus\": %s, \"fanStatus\": %s, \"timestamp\": %lu}",
             snapshot.temperature,
@@ -133,7 +170,11 @@ void publishSensorData() {
             snapshot.lightStatus ? "true" : "false",
             snapshot.fanStatus ? "true" : "false",
             timestamp);
-  mqttClient.publish("greenhouse/sensorData", payload);
+  if(mqttClient.publish("greenhouse/sensorData", payload)){
+    lasttimepublished = snapshot; // Update last published data only on successful publish
+  }else{
+    Serial.println("Failed to publish MQTT message");
+  }
 }
 
 void setup() {
@@ -151,6 +192,7 @@ void setup() {
   valve1.begin();
   valve2.begin();
   ds18b20.begin();
+  gy302.begin();
   lamp.begin();
   fan.begin();
 
@@ -168,12 +210,16 @@ void setup() {
 }
 
 void loop() {
+
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("WiFi disconnected, attempting to reconnect...");
+    setupWiFi();
+  }
   if (!mqttClient.connected()) {
     reconnectMQTT();
   }
   mqttClient.loop();
   publishSensorData();
-  delay(5000); // Publish every 5 seconds
 
 
 }

@@ -24,6 +24,7 @@ typedef struct
 }DATA;
 
 extern DATA sensorData;
+extern DATA lastPublishedData;
 extern SemaphoreHandle_t dataMutex;
 extern uint32_t timestamp;
 extern SemaphoreHandle_t timestampMutex;

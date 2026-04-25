@@ -1,8 +1,7 @@
 #include "GY302.h"
 
 GY302::GY302(int sda, int scl):
-    SDA(sda), SCL(scl){
-}
+    SDA(sda), SCL(scl), luxValue(0.0){}
 
 float GY302::readluxValue(){
     return lightMeter.readLightLevel();

@@ -12,7 +12,7 @@ void Fan::on() {
 void Fan::off() {
     digitalWrite(pin, LOW);
 }
-Fan_Manager::Fan_Manager(Fan *fan, DHT22_sensor *dht22): fan(fan), dht22(dht22){}
+Fan_Manager::Fan_Manager(Fan *fan, DHT22_sensor *dht22): fan(fan), dht22(dht22), state(false){}
 void Fan_Manager::task(void *param) {
     Fan_Manager *manager = (Fan_Manager *)param;
     manager->taskloop();

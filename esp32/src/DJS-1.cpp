@@ -1,6 +1,6 @@
 #include "DJS-1.h"
 
-DJS_1::DJS_1(int pin, float klow, float khigh): pin(pin), klow(klow), khigh(khigh) {}
+DJS_1::DJS_1(int pin, float klow, float khigh): pin(pin), klow(klow), khigh(khigh), ECvalue(0.0) {}
 
 float DJS_1::readVoltage() {
     float sum = 0;

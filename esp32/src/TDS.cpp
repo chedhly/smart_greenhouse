@@ -1,6 +1,6 @@
 #include"TDS.h"
 #include "globals.h"
-TDS::TDS(int pin): pin(pin) {}
+TDS::TDS(int pin): pin(pin), value(0.0) {}
 
 float TDS::readVoltage() {
     float sum = 0;

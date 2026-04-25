@@ -11,7 +11,7 @@ void Light::on(){
 void Light::off(){
     digitalWrite(pin, LOW);
 }
-light_manager::light_manager(GY302 *gy302, Light *light): gy302(gy302), light(light){}
+light_manager::light_manager(GY302 *gy302, Light *light): gy302(gy302), light(light), state(false){}
 
 void light_manager::task(void *param) {
     light_manager *manager = (light_manager *)param;

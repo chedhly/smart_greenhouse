@@ -1,7 +1,7 @@
 #include"PH.h"
 
 
-PH::PH(int pin, float calibrationOffset): pin(pin), calibrationOffset(calibrationOffset) {}
+PH::PH(int pin, float calibrationOffset): pin(pin), calibrationOffset(calibrationOffset), phValue(0.0) {}
 
 float PH::readPH() {
     float sum = 0;

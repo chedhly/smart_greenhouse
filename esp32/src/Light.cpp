@@ -11,7 +11,7 @@ void Light::on(){
 void Light::off(){
     digitalWrite(pin, LOW);
 }
-light_manager::light_manager(GY302 *gy302, Light *light): gy302(gy302), light(light), state(false){}
+light_manager::light_manager(GY302 *gy302, Light *light): gy302(gy302), light(light), state(false), TaskHandle(nullptr) {}
 
 void light_manager::task(void *param) {
     light_manager *manager = (light_manager *)param;
@@ -19,9 +19,9 @@ void light_manager::task(void *param) {
 }
 void light_manager::taskloop() {
     while (true) {
-        xSemaphoreTake(gy302ready, portMAX_DELAY);
-        int value = gy302->getluxValue();
-        if (value < 100) { // Adjust this threshold based on your requirements
+        if (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(10000)) == 0) {
+        float value = gy302->getluxValue();
+        if (value < 100.0) { // Adjust this threshold based on your requirements
             light->on();
             state = true;
         } else {
@@ -33,6 +33,8 @@ void light_manager::taskloop() {
         xSemaphoreGive(dataMutex);
     }
 }
+}
 void light_manager::STARTTask() {
-    xTaskCreate(task, "Light Manager Task", 2048, this, 1, NULL);
+    xTaskCreate(task, "Light Manager Task", 2048, this, 1, &TaskHandle);
+    lightTaskHandle = TaskHandle; // Store the task handle in the global variable
 }

@@ -19,6 +19,7 @@ class light_manager{
     bool state;
     GY302 *gy302;
     Light *light;
+    TaskHandle_t TaskHandle;
     static void task(void *param);
     void taskloop();
 };

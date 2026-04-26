@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include "DHT22_sensor.h"
+#include <freertos/task.h>
 
 class Fan {
     int pin;
@@ -18,6 +19,7 @@ class Fan_Manager{
     Fan *fan;
     DHT22_sensor *dht22;
     bool state;
+    TaskHandle_t TaskHandle;
     static void task(void *param);
     void taskloop();
 };

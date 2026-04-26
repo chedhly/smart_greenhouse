@@ -22,6 +22,7 @@ SSI3430_01A_Manager::SSI3430_01A_Manager(SSI3430_01A *valve1, SSI3430_01A *valve
     this->valve2 = valve2;
     this->US2 = US2;
     this->US3 = US3;
+    this->TaskHandle = nullptr;
 }
 void SSI3430_01A_Manager::task(void *param) {
     SSI3430_01A_Manager *manager = (SSI3430_01A_Manager *)param;
@@ -29,7 +30,8 @@ void SSI3430_01A_Manager::task(void *param) {
 }
 void SSI3430_01A_Manager::taskloop() {
     while(1){
-        xSemaphoreTake(hcsr04ready, portMAX_DELAY);
+        if(ulTaskNotifyTake(pdTRUE, portMAX_DELAY) == 0) {
+
         long distance1 = US2->getWaterLevel();
         long distance2 = US3->getWaterLevel();
         if (10 < distance1 && distance1 < 20) {
@@ -57,8 +59,10 @@ void SSI3430_01A_Manager::taskloop() {
         } else {
             valve2->close();
         }
+       }
     }
 }
 void SSI3430_01A_Manager::STARTTask() {
-    xTaskCreate(task, "SSI3430_01A Task", 2048 , this, 2, NULL);
+    xTaskCreate(task, "SSI3430_01A Task", 2048 , this, 2, &TaskHandle);
+    valveTaskHandle = TaskHandle; // Store the task handle in the global variable
 }

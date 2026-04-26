@@ -47,9 +47,11 @@ DATA lasttimepublished={};
 SemaphoreHandle_t dataMutex=nullptr;
 uint32_t timestamp=0;
 SemaphoreHandle_t timestampMutex=nullptr;
-SemaphoreHandle_t dht22ready=nullptr;
-SemaphoreHandle_t gy302ready=nullptr;
-SemaphoreHandle_t hcsr04ready=nullptr;
+TaskHandle_t fanTaskHandle = nullptr;
+TaskHandle_t lightTaskHandle = nullptr; 
+TaskHandle_t valveTaskHandle = nullptr;
+SemaphoreHandle_t sensorreadmutex = nullptr;
+SemaphoreHandle_t ds18b20mutex = nullptr;
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
@@ -108,18 +110,18 @@ void setupWiFi() {
 void reconnectMQTT() {
   static unsigned long lastAttemptTime = 0;
   unsigned long currentTime = millis();
-  if (currentTime - lastAttemptTime < 5000) return; // Only attempt to reconnect every 5 seconds
-  if (mqttClient.connected()) {
-    Serial.println("Connecting to MQTT server");
+  if (currentTime - lastAttemptTime < 5000) return;
+
+  if (!mqttClient.connected()) {
+    Serial.println("Connecting to MQTT server...");
     if (mqttClient.connect("ESP32Client")) {
       Serial.println("Connected to MQTT server");
+    } else {
+      Serial.print("Failed to connect to MQTT server, rc=");
+      Serial.println(mqttClient.state());
     }
-  } else {
-    Serial.print("Failed to connect to MQTT server, rc=");
-    Serial.print(mqttClient.state());
     lastAttemptTime = currentTime;
   }
-  
 }
 bool haschanged(const DATA& a, const DATA& b) {
   return a.temperature != b.temperature ||
@@ -182,9 +184,9 @@ void setup() {
 
   dataMutex = xSemaphoreCreateMutex();
   timestampMutex = xSemaphoreCreateMutex();
-  dht22ready = xSemaphoreCreateBinary();
-  gy302ready = xSemaphoreCreateBinary();
-  hcsr04ready = xSemaphoreCreateBinary();
+  sensorreadmutex = xSemaphoreCreateMutex();
+  ds18b20mutex = xSemaphoreCreateMutex();
+  
   setupWiFi();
    mqttClient.setServer(mqttServer, mqttPort);
 

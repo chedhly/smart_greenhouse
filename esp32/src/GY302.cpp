@@ -9,14 +9,18 @@ float GY302::readluxValue(){
 
 void GY302::GY302Taskinternal(){
     while (true){
+        xSemaphoreTake(sensorreadmutex, portMAX_DELAY);
         luxValue = readluxValue();
+        xSemaphoreGive(sensorreadmutex);
         xSemaphoreTake(dataMutex, portMAX_DELAY);
         sensorData.light = luxValue;
         xSemaphoreGive(dataMutex);
 
-        xSemaphoreGive(gy302ready);
+        if (lightTaskHandle != nullptr) {
+            xTaskNotifyGive(lightTaskHandle);
+        }
 
-        vTaskDelay(3000 / portTICK_PERIOD_MS);
+        vTaskDelay(pdMS_TO_TICKS(3000));
     }
 }
 void GY302::GY302Task(void *p){

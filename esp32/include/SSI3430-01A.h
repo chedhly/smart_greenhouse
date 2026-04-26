@@ -2,6 +2,7 @@
 #pragma once
 #include <Arduino.h>
 #include "HCSR04.h"
+#include <freertos/task.h>
 
 class SSI3430_01A {
     int pin;
@@ -19,6 +20,7 @@ class SSI3430_01A_Manager {
     private:
     SSI3430_01A *valve1, *valve2;
     HCSR04 *US2, *US3;
+    TaskHandle_t TaskHandle;
     static void task(void *param);
     void taskloop();
 };

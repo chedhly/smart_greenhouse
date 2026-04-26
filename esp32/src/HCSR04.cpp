@@ -38,10 +38,11 @@ void HCSR04Manager::taskloop() {
         sensorData.traddWlevel = waterLevel2;
         sensorData.hydrdWlevel = waterLevel3;
         xSemaphoreGive(dataMutex);
+            if (valveTaskHandle != nullptr) {
+                xTaskNotifyGive(valveTaskHandle);
+            }
 
-        xSemaphoreGive(hcsr04ready);
-
-        vTaskDelay(3000 / portTICK_PERIOD_MS);
+        vTaskDelay(pdMS_TO_TICKS(3000));
     }
 }
 

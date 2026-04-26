@@ -8,7 +8,7 @@ float DJS_1::readVoltage() {
     // averaging to reduce noise
     for(int i = 0; i < 10; i++) {
         sum += analogRead(pin);
-        delay(10);
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 
     float avg = sum / 10.0;
@@ -33,12 +33,13 @@ void DJS_1_Manager::task(void *param){
 }
 void DJS_1_Manager::taskloop(){
     while(1){
+        hydrotempSensor->updatevalues(); // Ensure we have the latest temperature for compensation
         float temp = hydrotempSensor->getHydTemp();
         float ecValue = djs1Sensor->readEC(temp);  
         xSemaphoreTake(dataMutex, portMAX_DELAY);
         sensorData.ec = ecValue;    
         xSemaphoreGive(dataMutex);
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        vTaskDelay(pdMS_TO_TICKS(3000));
     }
 }
 

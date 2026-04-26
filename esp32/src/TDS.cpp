@@ -8,7 +8,7 @@ float TDS::readVoltage() {
     // averaging to reduce noise
     for(int i = 0; i < 10; i++) {
         sum += analogRead(pin);
-        delay(10);
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 
     float avg = sum / 10.0;
@@ -48,6 +48,8 @@ void TDS_Manager::task(void *param) {
 
 void TDS_Manager::taskloop() {
     while (1) {
+        tempSensor->updatevalues(); // Ensure we have the latest temperature for compensation
+        
         float temperature = tempSensor->getTradTemp();
 
         float tdsValue = tdsSensor->readTDS(temperature);
@@ -55,6 +57,6 @@ void TDS_Manager::taskloop() {
         sensorData.tds = tdsValue;    
         xSemaphoreGive(dataMutex);      
 
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        vTaskDelay(pdMS_TO_TICKS(3000));
     }
 }

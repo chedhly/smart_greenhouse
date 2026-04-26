@@ -7,7 +7,7 @@ float PH::readPH() {
     float sum = 0;
     for (int i=0;i<10;i++){
         sum+=analogRead(pin);
-        delay(10);
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
     float voltage = sum / 10.0 * (3.3 / 4095.0);
     phValue= -5.7 * voltage + calibrationOffset;
@@ -20,7 +20,7 @@ void PH::PHTaskInternal() {
         xSemaphoreTake(dataMutex, portMAX_DELAY);
         sensorData.ph = phValue;
         xSemaphoreGive(dataMutex);
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        vTaskDelay(pdMS_TO_TICKS(3000));
     }
 }
 void PH::PHTask(void *param) {

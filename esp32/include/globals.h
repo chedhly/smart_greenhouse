@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
+#include <freertos/task.h>
 
 
 typedef struct
@@ -29,6 +30,8 @@ extern SemaphoreHandle_t dataMutex;
 extern uint32_t timestamp;
 extern SemaphoreHandle_t timestampMutex;
 
-extern SemaphoreHandle_t dht22ready;
-extern SemaphoreHandle_t gy302ready;
-extern SemaphoreHandle_t hcsr04ready;
+extern TaskHandle_t fanTaskHandle;
+extern TaskHandle_t lightTaskHandle;
+extern TaskHandle_t valveTaskHandle;
+extern SemaphoreHandle_t sensorreadmutex;
+extern SemaphoreHandle_t ds18b20mutex;

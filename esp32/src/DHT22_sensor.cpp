@@ -18,8 +18,10 @@ float DHT22_sensor::readHumidity(){
 }
 void DHT22_sensor::DHT22Taskinternal(){
     while(1){
+        xSemaphoreTake(sensorreadmutex, portMAX_DELAY);
         float temperature = readTemperature();
         float humidity = readHumidity();
+        xSemaphoreGive(sensorreadmutex);
         if (!isnan(temperature) && !isnan(humidity)) {
             temp = temperature;
             hum = humidity;
@@ -29,9 +31,11 @@ void DHT22_sensor::DHT22Taskinternal(){
         sensorData.humidity = hum;
         xSemaphoreGive(dataMutex);
 
-        xSemaphoreGive(dht22ready);
+        if (fanTaskHandle != nullptr) {
+            xTaskNotifyGive(fanTaskHandle);
+        }
 
-        vTaskDelay(3000 / portTICK_PERIOD_MS);
+        vTaskDelay(pdMS_TO_TICKS(3000));
     }
 }
 void DHT22_sensor::DHT22Task(void *param){

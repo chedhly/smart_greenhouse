@@ -26,7 +26,7 @@ public:
     DS18B20(int pin);
 
     void begin();
-
+    void updatevalues();
     static void DS18B20Task(void *param);
     void startTask();
 

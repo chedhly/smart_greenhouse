@@ -10,22 +10,23 @@ private:
     int pin;
     OneWire oneWire;
     DallasTemperature sensors;
-
-    DeviceAddress sensorAddresses[2];
-    int sensorCount;
+    DeviceAddress tradaddress;
+    DeviceAddress hydaddress;
+    bool tradTempValid;
+    bool hydTempValid;
 
     // Shared values
     float pondtrdTemp;
     float pondhydTemp;
 
     void readWTemperature();
-    void printAddress(DeviceAddress deviceAddress);
     void DS18B20Taskinternal();
 
 public:
     DS18B20(int pin);
 
     void begin();
+    void setaddress(const DeviceAddress& trad, const DeviceAddress& hyd);
     void updatevalues();
     static void DS18B20Task(void *param);
     void startTask();

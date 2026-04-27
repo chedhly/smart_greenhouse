@@ -3,54 +3,36 @@
 // Constructor
 DS18B20::DS18B20(int pin)
     : pin(pin), oneWire(pin), sensors(&oneWire),
-      sensorCount(0), pondtrdTemp(0), pondhydTemp(0) {}
+      tradTempValid(false), hydTempValid(false), pondtrdTemp(0), pondhydTemp(0) {}
 
 // Init
 void DS18B20::begin() {
     sensors.begin();
 
-    sensorCount = sensors.getDeviceCount();
-
     Serial.print("Number of DS18B20 sensors: ");
-    Serial.println(sensorCount);
+    Serial.println(sensors.getDeviceCount());
 
-    for (int i = 0; i < sensorCount && i < 2; i++) {
-        if (sensors.getAddress(sensorAddresses[i], i)) {
-            Serial.print("Sensor ");
-            Serial.print(i);
-            Serial.print(" address: ");
-            printAddress(sensorAddresses[i]);
-        }
-    }
 }
 
 // Read temperatures (internal)
 void DS18B20::readWTemperature() {
     sensors.requestTemperatures();
 
-    if (sensorCount >= 1) {
-        float t = sensors.getTempC(sensorAddresses[0]);
+    if (tradTempValid) {
+        float t = sensors.getTempC(tradaddress);
         if (t != DEVICE_DISCONNECTED_C) {
             pondtrdTemp = t;
         }
     }
 
-    if (sensorCount >= 2) {
-        float t = sensors.getTempC(sensorAddresses[1]);
+    if (hydTempValid) {
+        float t = sensors.getTempC(hydaddress);
         if (t != DEVICE_DISCONNECTED_C) {
             pondhydTemp = t;
         }
     }
 }
 
-// Print address
-void DS18B20::printAddress(DeviceAddress deviceAddress) {
-    for (int i = 0; i < 8; i++) {
-        if (deviceAddress[i] < 16) Serial.print("0");
-        Serial.print(deviceAddress[i], HEX);
-    }
-    Serial.println();
-}
 void DS18B20::updatevalues() {
     xSemaphoreTake(ds18b20mutex, portMAX_DELAY);
     xSemaphoreTake(sensorreadmutex, portMAX_DELAY);
@@ -63,6 +45,13 @@ void DS18B20::updatevalues() {
     sensorData.hydrtemp = pondhydTemp;
     xSemaphoreGive(dataMutex);
 }
+void DS18B20::setaddress(const DeviceAddress& trad, const DeviceAddress& hyd) {
+    memcpy(tradaddress, trad, sizeof(DeviceAddress));
+    memcpy(hydaddress, hyd, sizeof(DeviceAddress));
+    tradTempValid = true;
+    hydTempValid = true;
+}
+
 // RTOS loop
 void DS18B20::DS18B20Taskinternal() {
     while (true) {

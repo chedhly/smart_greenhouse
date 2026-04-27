@@ -190,30 +190,38 @@ void setup() {
   setupWiFi();
    mqttClient.setServer(mqttServer, mqttPort);
 
-  dht22.begin();
   valve1.begin();
   valve2.begin();
-  ds18b20.begin();
-  gy302.begin();
   lamp.begin();
   fan.begin();
+
+  dht22.begin();
+  ds18b20.begin();
+  gy302.begin();
+  DeviceAddress trad={0x28, 0xA5, 0xF7, 0x51, 0x00, 0x00, 0x00, 0x09}; // TODO: Replace with your actual sensor address
+  DeviceAddress hyd={0x28, 0x5C, 0x19, 0x53, 0x00, 0x00, 0x00, 0x92}; // TODO: Replace with your actual sensor address
+  ds18b20.setaddress(trad, hyd);
+
+  valveManager.STARTTask();
+  lightManager.STARTTask();
+  fanManager.STARTTask();
 
   dht22.DHT22startTask();
   ds18b20.startTask();
   gy302.GY302startTask();
-  fanManager.STARTTask();
   tdsManager.startTask();
   phSensor.PHstartTask();
-
   djs1Manager.STARTTask();
   HCSR04manager.STARTTask();
-  valveManager.STARTTask();
-  lightManager.STARTTask();
+
 }
 
 void loop() {
 
-  if (WiFi.status() != WL_CONNECTED) {
+  static unsigned long lastserrialprint = 0;
+  unsigned long currentTime = millis();
+
+ /* if (WiFi.status() != WL_CONNECTED) {
     Serial.println("WiFi disconnected, attempting to reconnect...");
     setupWiFi();
   }
@@ -222,6 +230,32 @@ void loop() {
   }
   mqttClient.loop();
   publishSensorData();
+*/
+    if (currentTime - lastserrialprint >= 5000) {
+
+  
+DATA snapshot;
+xSemaphoreTake(dataMutex, portMAX_DELAY);
+snapshot = sensorData;
+xSemaphoreGive(dataMutex);
+Serial.printf(
+  "T: %.2fC | H: %.2f%% | Tank: %.2f | Trad: %.2f | Hydr: %.2f | TradT: %.2fC | HydrT: %.2fC | Light: %.2f | TDS: %.2f | pH: %.2f | EC: %.2f | Lamp: %s | Fan: %s\n",
+  sensorData.temperature,
+  sensorData.humidity,
+  sensorData.tankWlevel,
+  sensorData.traddWlevel,
+  sensorData.hydrdWlevel,
+  sensorData.tradtemp,
+  sensorData.hydrtemp,
+  sensorData.light,
+  sensorData.tds,
+  sensorData.ph,
+  sensorData.ec,
+  sensorData.lightStatus ? "ON" : "OFF",
+  sensorData.fanStatus ? "ON" : "OFF"
+);
+lastserrialprint = currentTime;
+  }
 
 }
 

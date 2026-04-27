@@ -12,9 +12,12 @@ float HCSR04::mesureWaterLevel(long x) {
     digitalWrite(trig, HIGH);
     delayMicroseconds(10);
     digitalWrite(trig, LOW);
-    long duration = pulseIn(echo, HIGH);
-     waterlevel = x- duration * 0.034 / 2 ;
-     return waterlevel;
+    long duration = pulseIn(echo, HIGH,30000);
+    if (duration == 0) {
+        return -1; // Timeout, no object detected
+    }
+    waterlevel = x- duration * 0.034 / 2 ;
+    return waterlevel;
 }
 
 HCSR04Manager::HCSR04Manager(HCSR04 *sensor1, HCSR04 *sensor2, HCSR04 *sensor3) {
@@ -31,7 +34,9 @@ void HCSR04Manager::task(void *param) {
 void HCSR04Manager::taskloop() {
     while(1){
         float waterLevel1 = US1->mesureWaterLevel(100);
+        vTaskDelay(pdMS_TO_TICKS(200)); // Short delay to prevent sensor interference
         float waterLevel2 = US2->mesureWaterLevel(50);
+        vTaskDelay(pdMS_TO_TICKS(200)); // Short delay to prevent sensor interference
         float waterLevel3 = US3->mesureWaterLevel(50);
         xSemaphoreTake(dataMutex, portMAX_DELAY);
         sensorData.tankWlevel = waterLevel1;

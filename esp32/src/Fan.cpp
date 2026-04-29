@@ -22,7 +22,7 @@ void Fan_Manager::taskloop() {
         if (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(10000)) == 0) {
             float temperature = dht22->getTemperature();
             float humidity = dht22->getHumidity();
-            if (temperature > 30.0 || humidity < 70.0) {
+            if (temperature > 25.0 || humidity < 80.0) {
                 fan->on();
                 state = true;
             }else {

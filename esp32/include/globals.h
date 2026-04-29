@@ -11,10 +11,10 @@ typedef struct
   float temperature;
   float humidity;
   float tankWlevel;
-  float traddWlevel;
+  float tradWlevel;
   float hydrdWlevel;
   float tradtemp;
-  float hydrtemp;
+  float hydrdtemp;
   float light;
   float tds;
   float ph;

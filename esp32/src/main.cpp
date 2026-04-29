@@ -14,9 +14,9 @@
 #include <PubSubClient.h>
 
 
-const char* ssid = ""; // TODO: Add your WiFi SSID
-const char* password = ""; // TODO: Add your WiFi password
-const char* mqttServer = ""; // TODO: Add your MQTT server address
+const char* ssid = "Student"; // TODO: Add your WiFi SSID
+const char* password = "istic2025"; // TODO: Add your WiFi password
+const char* mqttServer = "10.18.0.71"; // TODO: Add your MQTT server address
 const int mqttPort = 1883; // TODO: Add your MQTT server port
 
 const float PH_CALIBRATION_OFFSET = 3.5; // Adjust this value based on calibration results
@@ -82,9 +82,9 @@ DJS_1_Manager djs1Manager(&djs1, &ds18b20);
 void setupWiFi() {
   static unsigned long lastAttempt= 0;
   unsigned long currentTime = millis();
+  Serial.println("Connecting to WiFi...");
   if (currentTime - lastAttempt < 5000) return; // Only attempt to connect every 5 seconds
   delay(10);
-  Serial.println("Connecting to WiFi...");
   WiFi.begin(ssid, password);
   int attempts = 0;
   while (WiFi.status()!=WL_CONNECTED && attempts < 20)
@@ -127,10 +127,10 @@ bool haschanged(const DATA& a, const DATA& b) {
   return a.temperature != b.temperature ||
          a.humidity != b.humidity ||
          a.tankWlevel != b.tankWlevel ||
-         a.traddWlevel != b.traddWlevel ||
+         a.tradWlevel != b.tradWlevel ||
          a.hydrdWlevel != b.hydrdWlevel ||
          a.tradtemp != b.tradtemp ||
-         a.hydrtemp != b.hydrtemp ||
+         a.hydrdtemp != b.hydrdtemp ||
          a.light != b.light ||
          a.tds != b.tds ||
          a.ph != b.ph ||
@@ -161,10 +161,10 @@ void publishSensorData() {
             snapshot.temperature,
             snapshot.humidity,
             snapshot.tankWlevel,
-            snapshot.traddWlevel,
+            snapshot.tradWlevel,
             snapshot.hydrdWlevel,
             snapshot.tradtemp,
-            snapshot.hydrtemp,
+            snapshot.hydrdtemp,
             snapshot.light,
             snapshot.tds,
             snapshot.ph,
@@ -221,7 +221,7 @@ void loop() {
   static unsigned long lastserrialprint = 0;
   unsigned long currentTime = millis();
 
- /* if (WiFi.status() != WL_CONNECTED) {
+ if (WiFi.status() != WL_CONNECTED) {
     Serial.println("WiFi disconnected, attempting to reconnect...");
     setupWiFi();
   }
@@ -230,7 +230,7 @@ void loop() {
   }
   mqttClient.loop();
   publishSensorData();
-*/
+
     if (currentTime - lastserrialprint >= 5000) {
 
   
@@ -243,10 +243,10 @@ Serial.printf(
   sensorData.temperature,
   sensorData.humidity,
   sensorData.tankWlevel,
-  sensorData.traddWlevel,
+  sensorData.tradWlevel,
   sensorData.hydrdWlevel,
   sensorData.tradtemp,
-  sensorData.hydrtemp,
+  sensorData.hydrdtemp,
   sensorData.light,
   sensorData.tds,
   sensorData.ph,

@@ -42,7 +42,7 @@ void DS18B20::updatevalues() {
 
     xSemaphoreTake(dataMutex, portMAX_DELAY);
     sensorData.tradtemp = pondtrdTemp;  
-    sensorData.hydrtemp = pondhydTemp;
+    sensorData.hydrdtemp = pondhydTemp;
     xSemaphoreGive(dataMutex);
 }
 void DS18B20::setaddress(const DeviceAddress& trad, const DeviceAddress& hyd) {
@@ -58,7 +58,7 @@ void DS18B20::DS18B20Taskinternal() {
         readWTemperature();
         xSemaphoreTake(dataMutex, portMAX_DELAY);
         sensorData.tradtemp = pondtrdTemp;
-        sensorData.hydrtemp = pondhydTemp;
+        sensorData.hydrdtemp = pondhydTemp;
         xSemaphoreGive(dataMutex);
 
         vTaskDelay(pdMS_TO_TICKS(3000));

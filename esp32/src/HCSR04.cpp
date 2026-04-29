@@ -40,7 +40,7 @@ void HCSR04Manager::taskloop() {
         float waterLevel3 = US3->mesureWaterLevel(50);
         xSemaphoreTake(dataMutex, portMAX_DELAY);
         sensorData.tankWlevel = waterLevel1;
-        sensorData.traddWlevel = waterLevel2;
+        sensorData.tradWlevel = waterLevel2;
         sensorData.hydrdWlevel = waterLevel3;
         xSemaphoreGive(dataMutex);
             if (valveTaskHandle != nullptr) {

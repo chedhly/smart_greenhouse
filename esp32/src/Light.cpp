@@ -21,7 +21,7 @@ void light_manager::taskloop() {
     while (true) {
         if (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(10000)) == 0) {
         float value = gy302->getluxValue();
-        if (value < 100.0) { // Adjust this threshold based on your requirements
+        if (value < 15000.0) { // Adjust this threshold based on your requirements
             light->on();
             state = true;
         } else {

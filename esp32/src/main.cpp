@@ -14,9 +14,9 @@
 #include <PubSubClient.h>
 
 
-const char* ssid = "Student"; // TODO: Add your WiFi SSID
-const char* password = "istic2025"; // TODO: Add your WiFi password
-const char* mqttServer = "10.18.0.71"; // TODO: Add your MQTT server address
+const char* ssid = "Flybox_B9EA"; // TODO: Add your WiFi SSID
+const char* password = "Edenn2028"; // TODO: Add your WiFi password
+const char* mqttServer = "192.168.1.187"; // TODO: Add your MQTT server address
 const int mqttPort = 1883; // TODO: Add your MQTT server port
 
 const float PH_CALIBRATION_OFFSET = 3.5; // Adjust this value based on calibration results
@@ -157,7 +157,7 @@ void publishSensorData() {
   }
   char payload[512];
   snprintf(payload, sizeof(payload), 
-           "{\"temperature\": %.2f, \"humidity\": %.2f, \"tankWlevel\": %.2f, \"traddWlevel\": %.2f, \"hydrdWlevel\": %.2f, \"tradtemp\": %.2f, \"hydrtemp\": %.2f, \"light\": %.2f, \"tds\": %.2f, \"ph\": %.2f, \"ec\": %.2f, \"lightStatus\": %s, \"fanStatus\": %s, \"timestamp\": %lu}",
+           "{\"temperature\": %.2f, \"humidity\": %.2f, \"tankWlevel\": %.2f, \"tradWlevel\": %.2f, \"hydrdWlevel\": %.2f, \"tradtemp\": %.2f, \"hydrdtemp\": %.2f, \"light\": %.2f, \"tds\": %.2f, \"ph\": %.2f, \"ec\": %.2f, \"lightStatus\": %s, \"fanStatus\": %s, \"timestamp\": %lu}",
             snapshot.temperature,
             snapshot.humidity,
             snapshot.tankWlevel,
@@ -181,6 +181,7 @@ void publishSensorData() {
 
 void setup() {
   Serial.begin(115200);
+  Wire.begin(SDA_PIN, SCL_PIN);
 
   dataMutex = xSemaphoreCreateMutex();
   timestampMutex = xSemaphoreCreateMutex();
@@ -221,7 +222,7 @@ void loop() {
   static unsigned long lastserrialprint = 0;
   unsigned long currentTime = millis();
 
- if (WiFi.status() != WL_CONNECTED) {
+/* if (WiFi.status() != WL_CONNECTED) {
     Serial.println("WiFi disconnected, attempting to reconnect...");
     setupWiFi();
   }
@@ -230,7 +231,7 @@ void loop() {
   }
   mqttClient.loop();
   publishSensorData();
-
+*/
     if (currentTime - lastserrialprint >= 5000) {
 
   

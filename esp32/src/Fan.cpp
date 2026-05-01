@@ -19,7 +19,7 @@ void Fan_Manager::task(void *param) {
 }
 void Fan_Manager::taskloop() {
     while (true) {
-        if (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(10000)) == 0) {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
             float temperature = dht22->getTemperature();
             float humidity = dht22->getHumidity();
             if (temperature > 25.0 || humidity < 80.0) {
@@ -34,7 +34,7 @@ void Fan_Manager::taskloop() {
         xSemaphoreGive(dataMutex);
     }
 }
-}
+
 void Fan_Manager::STARTTask() {
     xTaskCreate(task, "Fan Manager Task", 2048, this, 1, &TaskHandle);
     fanTaskHandle = TaskHandle; // Store the task handle in the global variable

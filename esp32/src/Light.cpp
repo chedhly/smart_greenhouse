@@ -19,19 +19,19 @@ void light_manager::task(void *param) {
 }
 void light_manager::taskloop() {
     while (true) {
-        if (ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(10000)) == 0) {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         float value = gy302->getluxValue();
         if (value < 15000.0) { // Adjust this threshold based on your requirements
             light->on();
             state = true;
-        } else {
+        } else if(value > 20000.0) {
             light->off();
             state = false;
         }
         xSemaphoreTake(dataMutex, portMAX_DELAY);
         sensorData.lightStatus = state;
         xSemaphoreGive(dataMutex);
-    }
+    
 }
 }
 void light_manager::STARTTask() {

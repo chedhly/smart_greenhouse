@@ -35,6 +35,5 @@ float GY302::getluxValue(){
     return luxValue;
 }
 void GY302::begin(){
-    Wire.begin(SDA, SCL);
     lightMeter.begin();
 }

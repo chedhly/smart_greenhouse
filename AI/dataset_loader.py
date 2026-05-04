@@ -13,11 +13,9 @@ class PlantDataset(Sequence):
 
         self.processor = ImageTreatment()
 
-        self.image_paths = np.load(f"../smart_greenhouse/split_dataset/paths/{split}_paths.npy", allow_pickle=True)
-        self.labels = np.load(f"../smart_greenhouse/split_dataset/labels/{split}_labels.npy", allow_pickle=True)
+        self.image_paths = np.load(f"../smart_greenhouse/azolla_split_dataset/paths/{split}_paths.npy", allow_pickle=True)
+       
 
-        dataset_path = "../smart_greenhouse/dataset/augmented_plantvillage"
-        self.class_names = sorted(os.listdir(dataset_path))
 
 #return the number of batches per epoch
 
@@ -33,21 +31,18 @@ class PlantDataset(Sequence):
             index*self.batch_size:(index+1)*self.batch_size
         ]
 
-        batch_labels = self.labels[
-            index*self.batch_size:(index+1)*self.batch_size
-        ]
 
-        images = [self.processor.preprocess(cv.imread(path)) for path in batch_paths]
+        images = []
+        for path in batch_paths:
 
-        return np.array(images), np.array(batch_labels)
+            img = cv.imread(path)
+            if img is None:
+                continue
+            img = self.processor.preprocess_image(img)
+
+            images.append(img)
+
+        return np.array(images)
     def on_epoch_end(self):
 
-        # Shuffle the dataset at the end of each epoch
-
-        indices = np.arange(len(self.image_paths))
-
-        np.random.shuffle(indices)
-
-        self.image_paths = self.image_paths[indices]
-
-        self.labels = self.labels[indices]
+        np.random.shuffle(self.image_paths)

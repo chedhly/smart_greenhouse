@@ -1,33 +1,43 @@
 import numpy as np
 from tensorflow.keras.models import load_model # type: ignore
 from dataset_loader import PlantDataset
-from sklearn.metrics import classification_report, confusion_matrix # type: ignore
-import seaborn as sns # type: ignore
 import matplotlib.pyplot as plt # type: ignore
 
-model=load_model("../smart_greenhouse/models/3rd_version/AI_model_v3.keras")
-class_names = np.load("../smart_greenhouse/labels/class_names_v3.npy", allow_pickle=True)
+model=load_model("../smart_greenhouse/AI/models/1st_version/AI_model_v1.keras")
+mean_vector=np.load("../smart_greenhouse/AI/labels/mean_vector_v1.npy")
+threshold=np.load("../smart_greenhouse/AI/labels/threshold_v1.npy")
 
 test_dataset = PlantDataset(split="test", batch_size=32)
 
 y_true = []
 y_pred = []
+distances = []
 
-for batch_x, batch_y in test_dataset:
-    predictions = model.predict(batch_x)
-    predicted_classes = np.argmax(predictions, axis=1)
-    y_true.extend(batch_y)
-    y_pred.extend(predicted_classes)
+for batch in test_dataset:
+    features = model.predict(batch, verbose=0)
+    for f in features:
+        dist = np.linalg.norm(f - mean_vector)
+        distances.append(dist)
+        if dist < threshold:
+            y_pred.append(0)  # Healthy
+        else:
+            y_pred.append(1)  # Unhealthy
+        y_true.append(0)  # Assuming all test samples are healthy for this example
 
 y_true=np.array(y_true)
 y_pred=np.array(y_pred)
+distances=np.array(distances)
 
-print(classification_report(y_true, y_pred, target_names=class_names))
+accuracy = np.mean(y_true == y_pred)
+print('\n===== Model Evaluation =====')
+print('Accuracy:', accuracy)
+print('Mean Distance:', np.mean(distances))
+print('threshold:', threshold)
 
-cm=confusion_matrix(y_true, y_pred)
-plt.figure(figsize=(10,8))
-sns.heatmap(cm, annot=True, fmt="d", xticklabels=class_names, yticklabels=class_names, cmap="Blues")
-plt.xlabel("Predicted")
-plt.ylabel("True")
-plt.title("Confusion Matrix")
+plt.hist(distances,bins=30)
+plt.axvline(threshold, color='red', linestyle="--", label="Threshold")
+plt.title("anomaly distance distribution")
+plt.xlabel("distance from healthy center")
+plt.ylabel("frequency")
+plt.legend()
 plt.show()

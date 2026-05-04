@@ -1,13 +1,14 @@
+from platform import processor
+
 import cv2 as cv
 import numpy as np
 import os
 from image_treatment import ImageTreatment
 from tensorflow.keras.models import load_model # type: ignore
 
-model = load_model("../smart_greenhouse/models/3rd_version/AI_model_v3.keras")
-class_names = np.load("../smart_greenhouse/labels/class_names_v3.npy", allow_pickle=True)
-
-processer=ImageTreatment()
+model = load_model("../smart_greenhouse/AI/models/1st_version/AI_model_v1.keras")
+mean_vector = np.load("../smart_greenhouse/AI/labels/mean_vector_v1.npy")
+threshold = np.load("../smart_greenhouse/AI/labels/threshold_v1.npy")
 
 def tank_fullness_prediction(image_path):
     img=cv.imread(image_path)
@@ -33,14 +34,16 @@ def tank_fullness_prediction(image_path):
 
 def predict_image(image_path):
     img=cv.imread(image_path)
-    img=processer.preprocess(img)
+    img=processor.preprocess(img)
     img=np.expand_dims(img, axis=0)
 
-    predictions=model.predict(img)
-    class_idx=np.argmax(predictions)
-    class_name=class_names[class_idx]
-    cofidence=predictions[0][class_idx]
-    return class_name, cofidence
+    features=model.predict(img)[0]
+    dist=np.linalg.norm(features - mean_vector)
+
+    if dist < threshold:
+        return "Healthy", dist
+    else:
+        return "Unhealthy", dist
 
 if __name__ == "__main__":
     image_path=input("Enter the path of the image to predict: ")

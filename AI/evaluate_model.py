@@ -4,8 +4,8 @@ from dataset_loader import PlantDataset
 import matplotlib.pyplot as plt # type: ignore
 
 model=load_model("../smart_greenhouse/AI/models/1st_version/AI_model_v1.keras")
-mean_vector=np.load("../smart_greenhouse/AI/labels/mean_vector_v1.npy")
-threshold=np.load("../smart_greenhouse/AI/labels/threshold_v1.npy")
+mean_vector=np.load("../smart_greenhouse/AI/models/1st_version/mean_vector_v1.npy")
+threshold=np.load("../smart_greenhouse/AI/models/1st_version/threshold_v1.npy")
 
 test_dataset = PlantDataset(split="test", batch_size=32)
 

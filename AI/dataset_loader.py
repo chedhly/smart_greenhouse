@@ -38,7 +38,7 @@ class PlantDataset(Sequence):
             img = cv.imread(path)
             if img is None:
                 continue
-            img = self.processor.preprocess_image(img)
+            img = self.processor.preprocess(img)
 
             images.append(img)
 

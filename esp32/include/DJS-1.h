@@ -1,4 +1,5 @@
 //this is the header file of the DJS-1 class, witch is an electric conductivity sensor that determin how much nutrument are in the water pond.
+#pragma once
 #include <Arduino.h>
 #include "DS18B20.h"
 #include "globals.h"
@@ -6,7 +7,6 @@
 class DJS_1 {
     int pin;
     float ECvalue,klow,khigh;
-    float readVoltage();
     float readEC(float temperature);
     public:
     DJS_1(int pin, float klow, float khigh);

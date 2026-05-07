@@ -5,10 +5,9 @@
 #include "globals.h"
 
 class TDS {
-private:
     int pin;
     float value; 
-        float readVoltage();
+    float readVoltage();
     float readTDS(float temperature);
 
 public:
@@ -18,7 +17,6 @@ friend class TDS_Manager;
 };
 
 class TDS_Manager {
-private:
     TDS *tdsSensor;
     DS18B20 *tempSensor;
 

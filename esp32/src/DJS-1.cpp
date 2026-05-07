@@ -2,7 +2,8 @@
 
 DJS_1::DJS_1(int pin, float klow, float khigh): pin(pin), klow(klow), khigh(khigh), ECvalue(0.0) {}
 
-float DJS_1::readVoltage() {
+
+float DJS_1::readEC(float temp){
     float sum = 0;
 
     // averaging to reduce noise
@@ -11,12 +12,7 @@ float DJS_1::readVoltage() {
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 
-    float avg = sum / 10.0;
-
-    return avg * 3.3 / 4095.0;
-}
-float DJS_1::readEC(float temp){
-    float voltage = readVoltage();
+    float voltage = sum / 10.0 * (3.3 / 4095.0);
     float K =klow + (khigh - klow) * (voltage/3.3);
     ECvalue = K * voltage;
     ECvalue = ECvalue / (1.0 + 0.02 * (temp - 25.0));

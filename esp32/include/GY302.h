@@ -10,11 +10,11 @@ class GY302{
     float luxValue;
     BH1750 lightMeter;
     float readluxValue();
-    void GY302Taskinternal();
+    void GY302taskloop();
+    static void GY302Task(void *param);
     public:
     GY302(int sda, int scl);
     void begin();
-    static void GY302Task(void *param);
     void GY302startTask();
     float getluxValue();
 

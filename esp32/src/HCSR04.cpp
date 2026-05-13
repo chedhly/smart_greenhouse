@@ -47,7 +47,7 @@ void HCSR04Manager::taskloop() {
                 xTaskNotifyGive(valveTaskHandle);
             }
 
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        vTaskDelay(pdMS_TO_TICKS(60000)); // Delay for 1 minute
     }
 }
 

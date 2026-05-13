@@ -20,7 +20,8 @@ private:
     float pondhydTemp;
 
     void readWTemperature();
-    void DS18B20Taskinternal();
+    void DS18B20taskloop();
+    static void DS18B20Task(void *param);
 
 public:
     DS18B20(int pin);
@@ -28,7 +29,6 @@ public:
     void begin();
     void setaddress(const DeviceAddress& trad, const DeviceAddress& hyd);
     void updatevalues();
-    static void DS18B20Task(void *param);
     void startTask();
 
     // Getters

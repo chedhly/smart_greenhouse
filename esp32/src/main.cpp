@@ -78,6 +78,7 @@ light_manager lightManager(&gy302, &lamp);
 Fan_Manager fanManager(&fan, &dht22);
 TDS_Manager tdsManager(&tds, &ds18b20);
 DJS_1_Manager djs1Manager(&djs1, &ds18b20);
+PH_Manager phManager(&phSensor,&ds18b20);
 
 void setupWiFi() {
   static unsigned long lastAttempt= 0;
@@ -211,7 +212,7 @@ void setup() {
   ds18b20.startTask();
   gy302.GY302startTask();
   tdsManager.startTask();
-  phSensor.PHstartTask();
+  phManager.STARTTask();
   djs1Manager.STARTTask();
   HCSR04manager.STARTTask();
 
@@ -222,7 +223,7 @@ void loop() {
   static unsigned long lastserrialprint = 0;
   unsigned long currentTime = millis();
 
-/* if (WiFi.status() != WL_CONNECTED) {
+ if (WiFi.status() != WL_CONNECTED) {
     Serial.println("WiFi disconnected, attempting to reconnect...");
     setupWiFi();
   }
@@ -231,7 +232,7 @@ void loop() {
   }
   mqttClient.loop();
   publishSensorData();
-*/
+
     if (currentTime - lastserrialprint >= 5000) {
 
   

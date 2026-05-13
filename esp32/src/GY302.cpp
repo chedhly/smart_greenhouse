@@ -7,7 +7,7 @@ float GY302::readluxValue(){
     return lightMeter.readLightLevel();
 }
 
-void GY302::GY302Taskinternal(){
+void GY302::GY302taskloop(){
     while (true){
         xSemaphoreTake(sensorreadmutex, portMAX_DELAY);
         luxValue = readluxValue();
@@ -20,12 +20,12 @@ void GY302::GY302Taskinternal(){
             xTaskNotifyGive(lightTaskHandle);
         }
 
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        vTaskDelay(pdMS_TO_TICKS(3600000)); // Delay for 1 hour
     }
 }
 void GY302::GY302Task(void *p){
     GY302 *gy302 = (GY302 *)p;
-    gy302->GY302Taskinternal();
+    gy302->GY302taskloop();
     
 }
 void GY302 ::GY302startTask(){

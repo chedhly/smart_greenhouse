@@ -35,7 +35,7 @@ void DJS_1_Manager::taskloop(){
         xSemaphoreTake(dataMutex, portMAX_DELAY);
         sensorData.ec = ecValue;    
         xSemaphoreGive(dataMutex);
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        vTaskDelay(pdMS_TO_TICKS(3600000)); // Delay for 1 hour
     }
 }
 

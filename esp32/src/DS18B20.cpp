@@ -53,7 +53,7 @@ void DS18B20::setaddress(const DeviceAddress& trad, const DeviceAddress& hyd) {
 }
 
 // RTOS loop
-void DS18B20::DS18B20Taskinternal() {
+void DS18B20::DS18B20taskloop() {
     while (true) {
         readWTemperature();
         xSemaphoreTake(dataMutex, portMAX_DELAY);
@@ -61,14 +61,14 @@ void DS18B20::DS18B20Taskinternal() {
         sensorData.hydrdtemp = pondhydTemp;
         xSemaphoreGive(dataMutex);
 
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        vTaskDelay(pdMS_TO_TICKS(900000)); // Delay for 15 minutes
     }
 }
 
 // Task wrapper
 void DS18B20::DS18B20Task(void *param) {
     DS18B20 *sensor = (DS18B20 *)param;
-    sensor->DS18B20Taskinternal();
+    sensor->DS18B20taskloop();
 }
 
 // Start task

@@ -10,11 +10,11 @@ class DHT22_sensor {
     float temp , hum;
     float readTemperature();
     float readHumidity();
-    void  DHT22Taskinternal();
+    void  DHT22taskloop();
+    static void DHT22Task(void *param);
     public:
     DHT22_sensor(int pin);
     void begin();
-    static void DHT22Task(void *param);
     void DHT22startTask();
     float getTemperature();
     float getHumidity();

@@ -57,6 +57,6 @@ void TDS_Manager::taskloop() {
         sensorData.tds = tdsValue;    
         xSemaphoreGive(dataMutex);      
 
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        vTaskDelay(pdMS_TO_TICKS(3600000)); // Delay for 1 hour
     }
 }

@@ -1,4 +1,8 @@
 #include <Arduino.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <math.h>
+#include <Wire.h>
 #include "globals.h"
 #include "HCSR04.h"
 #include "SSI3430-01A.h"
@@ -10,13 +14,11 @@
 #include "TDS.h"
 #include "PH.h"
 #include "DJS-1.h"
-#include <WiFi.h>
-#include <PubSubClient.h>
 
-
-const char* ssid = "Flybox_B9EA"; // TODO: Add your WiFi SSID
-const char* password = "Edenn2028"; // TODO: Add your WiFi password
-const char* mqttServer = "192.168.1.187"; // TODO: Add your MQTT server address
+bool wifiWasConnected = false;
+const char* ssid = "Ooredoo 5G_854626"; // TODO: Add your WiFi SSID
+const char* password = "7RH6U82J35"; // TODO: Add your WiFi password
+const char* mqttServer = "192.168.1.127"; // TODO: Add your MQTT server address
 const int mqttPort = 1883; // TODO: Add your MQTT server port
 
 const float PH_CALIBRATION_OFFSET = 3.5; // Adjust this value based on calibration results
@@ -36,26 +38,36 @@ const int DJS1_PIN=35;
 const int SDA_PIN = 21;
 const int SCL_PIN = 22;
 
-
 const int VALVE1_PIN = 13;
 const int VALVE2_PIN = 5;
 const int lamp_PIN = 16;
 const int fan_PIN = 17;
 
-DATA sensorData={};
-DATA lasttimepublished={};
-SemaphoreHandle_t dataMutex=nullptr;
-uint32_t timestamp=0;
-SemaphoreHandle_t timestampMutex=nullptr;
-TaskHandle_t fanTaskHandle = nullptr;
-TaskHandle_t lightTaskHandle = nullptr; 
-TaskHandle_t valveTaskHandle = nullptr;
+const float temperature_threshold = 0.5; // Adjust this threshold based on your requirements
+const float humidity_threshold = 2.0; // Adjust this threshold based on your requirements
+const float waterlevel_threshold = 1.0; // Adjust this threshold based on your requirements
+const float LIGHT_THRESHOLD = 100; // Adjust this threshold based on your requirements
+const float TDS_THRESHOLD = 10; // Adjust this threshold based on your requirements
+const float PH_THRESHOLD = 0.1; // Adjust this threshold based on your requirements
+const float EC_THRESHOLD = 0.1; // Adjust this threshold based on your requirements
+
+DATA sensorData = {};
+DATA lasttimepublished = {};
+
+SemaphoreHandle_t dataMutex = nullptr;
 SemaphoreHandle_t sensorreadmutex = nullptr;
 SemaphoreHandle_t ds18b20mutex = nullptr;
+
+TaskHandle_t fanTaskHandle = nullptr;
+TaskHandle_t lightTaskHandle = nullptr;
+TaskHandle_t valveTaskHandle = nullptr;
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
+
+DeviceAddress trad = {0x28, 0xA5, 0xF7, 0x51, 0x00, 0x00, 0x00, 0x09};
+DeviceAddress hyd  = {0x28, 0x5C, 0x19, 0x53, 0x00, 0x00, 0x00, 0x92};
 
 HCSR04 UStank(US1_TRIG_PIN, US1_ECHO_PIN);
 HCSR04 USAtrad(US2_TRIG_PIN, US2_ECHO_PIN);
@@ -67,8 +79,8 @@ TDS tds(TDS_PIN);
 PH phSensor(PH_PIN, PH_CALIBRATION_OFFSET);
 DJS_1 djs1(DJS1_PIN, klow, khigh);
 
-SSI3430_01A valve1 (VALVE1_PIN);
-SSI3430_01A valve2 (VALVE2_PIN);
+SSI3430_01A valve1(VALVE1_PIN);
+SSI3430_01A valve2(VALVE2_PIN);
 Light lamp(lamp_PIN);
 Fan fan(fan_PIN);
 
@@ -78,37 +90,54 @@ light_manager lightManager(&gy302, &lamp);
 Fan_Manager fanManager(&fan, &dht22);
 TDS_Manager tdsManager(&tds, &ds18b20);
 DJS_1_Manager djs1Manager(&djs1, &ds18b20);
-PH_Manager phManager(&phSensor,&ds18b20);
+PH_Manager phManager(&phSensor, &ds18b20);
 
 void setupWiFi() {
-  static unsigned long lastAttempt= 0;
-  unsigned long currentTime = millis();
-  Serial.println("Connecting to WiFi...");
-  if (currentTime - lastAttempt < 5000) return; // Only attempt to connect every 5 seconds
-  delay(10);
-  WiFi.begin(ssid, password);
-  int attempts = 0;
-  while (WiFi.status()!=WL_CONNECTED && attempts < 20)
-  {
-    delay(500);
-    Serial.print(".");
-    attempts++;
-  }
-  if (WiFi.status()==WL_CONNECTED)
-  {
-  Serial.println("\nWiFi connected");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
-  }
-  else
-  {
-    Serial.println("Failed to connect to WiFi");
-  }
-  lastAttempt = currentTime;
 
+  static bool wifiStarted = false;
+
+  if (WiFi.status() == WL_CONNECTED) return;
+
+  if (!wifiStarted) {
+
+    Serial.println("Starting WiFi...");
+
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
+
+    wifiStarted = true;
+  }
+}
+
+void printWiFiDebugOnceConnected() {
+
+  if (WiFi.status() != WL_CONNECTED) {
+    wifiWasConnected = false;
+    return;
+  }
+
+  if (wifiWasConnected) return; // print only once per connection
+
+  wifiWasConnected = true;
+
+  Serial.println("\n===== WIFI CONNECTED =====");
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
+
+  Serial.print("Gateway: ");
+  Serial.println(WiFi.gatewayIP());
+
+  Serial.print("Subnet: ");
+  Serial.println(WiFi.subnetMask());
+
+  Serial.print("RSSI: ");
+  Serial.println(WiFi.RSSI());
+
+  Serial.println("==========================\n");
 }
 
 void reconnectMQTT() {
+  if (WiFi.status() != WL_CONNECTED) return;
   static unsigned long lastAttemptTime = 0;
   unsigned long currentTime = millis();
   if (currentTime - lastAttemptTime < 5000) return;
@@ -124,74 +153,89 @@ void reconnectMQTT() {
     lastAttemptTime = currentTime;
   }
 }
+
 bool haschanged(const DATA& a, const DATA& b) {
-  return a.temperature != b.temperature ||
-         a.humidity != b.humidity ||
-         a.tankWlevel != b.tankWlevel ||
-         a.tradWlevel != b.tradWlevel ||
-         a.hydrdWlevel != b.hydrdWlevel ||
-         a.tradtemp != b.tradtemp ||
-         a.hydrdtemp != b.hydrdtemp ||
-         a.light != b.light ||
-         a.tds != b.tds ||
-         a.ph != b.ph ||
-         a.ec != b.ec ||
+  return fabs(a.temperature - b.temperature) > temperature_threshold ||
+         fabs(a.humidity - b.humidity) > humidity_threshold ||
+         fabs(a.tankWlevel - b.tankWlevel) > waterlevel_threshold ||
+         fabs(a.tradWlevel - b.tradWlevel) > waterlevel_threshold ||
+         fabs(a.hydrdWlevel - b.hydrdWlevel) > waterlevel_threshold ||
+         fabs(a.tradtemp - b.tradtemp) > temperature_threshold ||
+         fabs(a.hydrdtemp - b.hydrdtemp) > temperature_threshold ||
+         fabs(a.light - b.light) > LIGHT_THRESHOLD ||
+         fabs(a.tds - b.tds) > TDS_THRESHOLD ||
+         fabs(a.ph - b.ph) > PH_THRESHOLD ||
+         fabs(a.ec - b.ec) > EC_THRESHOLD ||
          a.lightStatus != b.lightStatus ||
          a.fanStatus != b.fanStatus;
 }
 
+
 void publishSensorData() {
-  if (!mqttClient.connected())return;
-    
+
+  if (!mqttClient.connected()) return;
+
+  static unsigned long lastPublish = 0;
+  if (millis() - lastPublish < 2000) return;
+
   DATA snapshot;
-
-  xSemaphoreTake(timestampMutex, portMAX_DELAY);
-  timestamp = millis();
-  xSemaphoreGive(timestampMutex);
-
-  xSemaphoreTake(dataMutex, portMAX_DELAY);
   snapshot = sensorData;
-  xSemaphoreGive(dataMutex);
 
-  if (!haschanged(snapshot, lasttimepublished)) {
-    return; // No significant change, skip publishing
-  }
+  if (!haschanged(snapshot, lasttimepublished)) return;
+
   char payload[512];
-  snprintf(payload, sizeof(payload), 
-           "{\"temperature\": %.2f, \"humidity\": %.2f, \"tankWlevel\": %.2f, \"tradWlevel\": %.2f, \"hydrdWlevel\": %.2f, \"tradtemp\": %.2f, \"hydrdtemp\": %.2f, \"light\": %.2f, \"tds\": %.2f, \"ph\": %.2f, \"ec\": %.2f, \"lightStatus\": %s, \"fanStatus\": %s, \"timestamp\": %lu}",
-            snapshot.temperature,
-            snapshot.humidity,
-            snapshot.tankWlevel,
-            snapshot.tradWlevel,
-            snapshot.hydrdWlevel,
-            snapshot.tradtemp,
-            snapshot.hydrdtemp,
-            snapshot.light,
-            snapshot.tds,
-            snapshot.ph,
-            snapshot.ec,
-            snapshot.lightStatus ? "true" : "false",
-            snapshot.fanStatus ? "true" : "false",
-            timestamp);
-  if(mqttClient.publish("greenhouse/sensorData", payload)){
-    lasttimepublished = snapshot; // Update last published data only on successful publish
-  }else{
-    Serial.println("Failed to publish MQTT message");
+
+  snprintf(payload, sizeof(payload),
+    "{\"temperature\":%.2f,\"humidity\":%.2f,\"tankWlevel\":%.2f,"
+    "\"tradWlevel\":%.2f,\"hydrdWlevel\":%.2f,\"tradtemp\":%.2f,"
+    "\"hydrdtemp\":%.2f,\"light\":%.2f,\"tds\":%.2f,\"ph\":%.2f,"
+    "\"ec\":%.2f,\"lightStatus\":%s,\"fanStatus\":%s,\"timestamp\":%lu}",
+
+    snapshot.temperature,
+    snapshot.humidity,
+    snapshot.tankWlevel,
+    snapshot.tradWlevel,
+    snapshot.hydrdWlevel,
+    snapshot.tradtemp,
+    snapshot.hydrdtemp,
+    snapshot.light,
+    snapshot.tds,
+    snapshot.ph,
+    snapshot.ec,
+    snapshot.lightStatus ? "true" : "false",
+    snapshot.fanStatus ? "true" : "false",
+    millis()
+  );
+
+  if (mqttClient.publish("greenhouse/sensorData", payload)) {
+    Serial.println("MQTT publish success");
+    lasttimepublished = snapshot;
+    lastPublish = millis();
+  } else {
+    Serial.print("MQTT publish failed, state=");
+    Serial.println(mqttClient.state());
   }
 }
 
+
 void setup() {
+
   Serial.begin(115200);
   Wire.begin(SDA_PIN, SCL_PIN);
 
   dataMutex = xSemaphoreCreateMutex();
-  timestampMutex = xSemaphoreCreateMutex();
   sensorreadmutex = xSemaphoreCreateMutex();
   ds18b20mutex = xSemaphoreCreateMutex();
-  
-  setupWiFi();
-   mqttClient.setServer(mqttServer, mqttPort);
 
+  if (!dataMutex || !sensorreadmutex || !ds18b20mutex) {
+    Serial.println("Mutex creation failed!");
+    while (true);
+  }
+  setupWiFi();
+  printWiFiDebugOnceConnected();
+
+  mqttClient.setServer(mqttServer, mqttPort);
+  mqttClient.setBufferSize(512);
   valve1.begin();
   valve2.begin();
   lamp.begin();
@@ -200,14 +244,12 @@ void setup() {
   dht22.begin();
   ds18b20.begin();
   gy302.begin();
-  DeviceAddress trad={0x28, 0xA5, 0xF7, 0x51, 0x00, 0x00, 0x00, 0x09}; // TODO: Replace with your actual sensor address
-  DeviceAddress hyd={0x28, 0x5C, 0x19, 0x53, 0x00, 0x00, 0x00, 0x92}; // TODO: Replace with your actual sensor address
+
   ds18b20.setaddress(trad, hyd);
 
   valveManager.STARTTask();
   lightManager.STARTTask();
   fanManager.STARTTask();
-
   dht22.DHT22startTask();
   ds18b20.startTask();
   gy302.GY302startTask();
@@ -215,49 +257,20 @@ void setup() {
   phManager.STARTTask();
   djs1Manager.STARTTask();
   HCSR04manager.STARTTask();
-
 }
+
 
 void loop() {
 
-  static unsigned long lastserrialprint = 0;
-  unsigned long currentTime = millis();
-
- if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("WiFi disconnected, attempting to reconnect...");
+  if (WiFi.status() != WL_CONNECTED) {
     setupWiFi();
   }
+
   if (!mqttClient.connected()) {
     reconnectMQTT();
   }
   mqttClient.loop();
+
   publishSensorData();
 
-    if (currentTime - lastserrialprint >= 5000) {
-
-  
-DATA snapshot;
-xSemaphoreTake(dataMutex, portMAX_DELAY);
-snapshot = sensorData;
-xSemaphoreGive(dataMutex);
-Serial.printf(
-  "T: %.2fC | H: %.2f%% | Tank: %.2f | Trad: %.2f | Hydr: %.2f | TradT: %.2fC | HydrT: %.2fC | Light: %.2f | TDS: %.2f | pH: %.2f | EC: %.2f | Lamp: %s | Fan: %s\n",
-  sensorData.temperature,
-  sensorData.humidity,
-  sensorData.tankWlevel,
-  sensorData.tradWlevel,
-  sensorData.hydrdWlevel,
-  sensorData.tradtemp,
-  sensorData.hydrdtemp,
-  sensorData.light,
-  sensorData.tds,
-  sensorData.ph,
-  sensorData.ec,
-  sensorData.lightStatus ? "ON" : "OFF",
-  sensorData.fanStatus ? "ON" : "OFF"
-);
-lastserrialprint = currentTime;
-  }
-
 }
-

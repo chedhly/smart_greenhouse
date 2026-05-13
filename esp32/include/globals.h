@@ -1,12 +1,11 @@
-//this is a stucture that contain all the sensor vallues that uses semaphore for real time edditing 
+//this is a stucture that contain all the sensor vallues that uses semaphore for real time edditing and the configuration of gloal variables and pin numbers for the project
 #pragma once
 #include <Arduino.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 #include <freertos/task.h>
 
-
-typedef struct
+struct DATA
 {
   float temperature;
   float humidity;
@@ -22,13 +21,12 @@ typedef struct
   bool lightStatus;
   bool fanStatus;
   
-}DATA;
+};
 
 extern DATA sensorData;
 extern DATA lasttimepublished;
 extern SemaphoreHandle_t dataMutex;
 extern uint32_t timestamp;
-extern SemaphoreHandle_t timestampMutex;
 
 extern TaskHandle_t fanTaskHandle;
 extern TaskHandle_t lightTaskHandle;
